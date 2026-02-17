@@ -31,7 +31,10 @@ function doGet() {
 }
 
 function normalizeBinary(v) {
-  return String(v) === "1" ? 1 : 0;
+  if (v === null || v === undefined || String(v).trim() === "") return "";
+  if (String(v) === "1") return 1;
+  if (String(v) === "0") return 0;
+  return "";
 }
 
 function normalizeWellbeing(v) {

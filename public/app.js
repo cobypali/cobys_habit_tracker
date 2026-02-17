@@ -1,11 +1,24 @@
 const pushButton = document.getElementById("enablePushBtn");
 const pushStatus = document.getElementById("pushStatus");
+const morningStatus = document.getElementById("morningStatus");
 const saveStatus = document.getElementById("saveStatus");
 const form = document.getElementById("habitForm");
+const morningUpdateButton = document.getElementById("updateMorningBtn");
 
 const appConfig = window.APP_CONFIG || {};
 const appsScriptUrl = appConfig.appsScriptUrl || "";
 const oneSignalAppId = appConfig.oneSignalAppId || "";
+const morningFieldNames = ["wakeUpAt8", "sleep75Hours", "meditate", "workout"];
+const fullDayRequiredFieldNames = [
+  ...morningFieldNames,
+  "workOnStudio",
+  "consumeDrugs",
+  "socialLimits",
+  "stretch",
+  "hairCare",
+  "gratitudePrayer",
+  "wellbeing"
+];
 
 init();
 
@@ -50,16 +63,65 @@ pushButton.addEventListener("click", async () => {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  saveStatus.textContent = "Saving...";
-
-  if (!appsScriptUrl || appsScriptUrl.includes("PASTE_")) {
-    saveStatus.textContent = "Set appsScriptUrl in public/config.js";
+  if (!validateRequiredFields(fullDayRequiredFieldNames, saveStatus, "Complete all required fields before saving.")) {
     return;
   }
 
-  const data = new FormData(form);
-  const payload = Object.fromEntries(data.entries());
-  payload.timestamp = new Date().toISOString();
+  const payload = buildPayload([...fullDayRequiredFieldNames, "notes"]);
+  await sendPayload(payload, saveStatus, "Sent. Confirm in Google Sheet.");
+});
+
+morningUpdateButton.addEventListener("click", async () => {
+  if (!validateRequiredFields(morningFieldNames, morningStatus, "Complete questions 1-4 before updating 8:00 AM check-in.")) {
+    return;
+  }
+
+  const payload = buildPayload(morningFieldNames);
+  payload.checkInType = "8am";
+  await sendPayload(payload, morningStatus, "8:00 AM check-in sent.");
+});
+
+function getFieldValue(name) {
+  const field = form.elements.namedItem(name);
+  if (!field) {
+    return "";
+  }
+  return String(field.value || "").trim();
+}
+
+function validateRequiredFields(fieldNames, statusElement, message) {
+  for (const name of fieldNames) {
+    if (getFieldValue(name) === "") {
+      statusElement.textContent = message;
+      const field = form.elements.namedItem(name);
+      if (field && typeof field.focus === "function") {
+        field.focus();
+      }
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function buildPayload(fieldNames) {
+  const payload = { timestamp: new Date().toISOString() };
+  for (const name of fieldNames) {
+    const value = getFieldValue(name);
+    if (value !== "") {
+      payload[name] = value;
+    }
+  }
+  return payload;
+}
+
+async function sendPayload(payload, statusElement, successMessage) {
+  statusElement.textContent = "Saving...";
+
+  if (!appsScriptUrl || appsScriptUrl.includes("PASTE_")) {
+    statusElement.textContent = "Set appsScriptUrl in public/config.js";
+    return;
+  }
 
   const body = new URLSearchParams(payload);
 
@@ -69,12 +131,12 @@ form.addEventListener("submit", async (event) => {
       mode: "no-cors",
       body
     });
-    saveStatus.textContent = "Sent. Confirm in Google Sheet.";
+    statusElement.textContent = successMessage;
   } catch (error) {
     console.error(error);
-    saveStatus.textContent = "Save failed. Check Apps Script deployment.";
+    statusElement.textContent = "Save failed. Check Apps Script deployment.";
   }
-});
+}
 
 function scheduleInAppNotifications() {
   if (!("Notification" in window)) {

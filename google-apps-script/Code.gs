@@ -1,5 +1,5 @@
 var SPREADSHEET_ID = "1PxqMgro5uWJBAbR1ey4atBE_jx-WhI0AAxbAY7zqbVU";
-var SHEET_NAME = "Sheet1";
+var SHEET_NAME = "Habits 2026";
 var TIMEZONE = "America/Los_Angeles";
 
 var FIELD_TO_COLUMN = {

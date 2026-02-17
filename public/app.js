@@ -125,7 +125,7 @@ function getFieldValue(name) {
 }
 
 function buildPayload(fieldNames) {
-  const payload = { timestamp: new Date().toISOString() };
+  const payload = {};
   for (const name of fieldNames) {
     const value = getFieldValue(name);
     if (value !== "") {
@@ -136,7 +136,7 @@ function buildPayload(fieldNames) {
 }
 
 function hasAtLeastOneHabitValue(payload) {
-  return Object.keys(payload).some((key) => key !== "timestamp" && key !== "checkInType");
+  return Object.keys(payload).some((key) => key !== "checkInType");
 }
 
 async function sendPayload(payload, statusElement, successMessage) {

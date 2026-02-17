@@ -27,6 +27,7 @@ init();
 
 function init() {
   initOneSignal();
+  initBinaryInputs();
   scheduleInAppNotifications();
 }
 
@@ -86,6 +87,35 @@ morningUpdateButton.addEventListener("click", async () => {
   await sendPayload(payload, morningStatus, "8:00 AM check-in sent.");
 });
 
+function initBinaryInputs() {
+  const binaryButtons = form.querySelectorAll(".binary-btn");
+  binaryButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const fieldName = button.dataset.field;
+      const value = button.dataset.value;
+      if (!fieldName || typeof value === "undefined") {
+        return;
+      }
+      setBinaryFieldValue(fieldName, value);
+    });
+  });
+}
+
+function setBinaryFieldValue(fieldName, value) {
+  const hiddenInput = form.querySelector(`input[type="hidden"][name="${fieldName}"]`);
+  if (!hiddenInput) {
+    return;
+  }
+
+  hiddenInput.value = value;
+  const relatedButtons = form.querySelectorAll(`.binary-btn[data-field="${fieldName}"]`);
+  relatedButtons.forEach((button) => {
+    const isSelected = button.dataset.value === value;
+    button.classList.toggle("is-selected", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
+  });
+}
+
 function getFieldValue(name) {
   const field = form.elements.namedItem(name);
   if (!field) {
@@ -137,7 +167,7 @@ function scheduleInAppNotifications() {
     return;
   }
   setNextNotification(8, 0, "8:00 AM Habit Check-In", "Open the app and complete questions 1-4.");
-  setNextNotification(9, 30, "9:30 AM Habit Check-In", "Open the app and complete questions 5-12.");
+  setNextNotification(21, 30, "9:30 PM Habit Check-In", "Open the app and complete questions 5-14.");
 }
 
 function setNextNotification(hour, minute, title, body) {

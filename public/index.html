@@ -21,80 +21,80 @@
         <section id="morning" class="panel">
           <h2>8:00 AM Check-In</h2>
           <label>1) Did you wake up at 8?</label>
-          <select name="wakeUpAt8">
-            <option value="" selected disabled>Select...</option>
-            <option value="1">1</option>
-            <option value="0">0</option>
-          </select>
+          <div class="binary-input" data-field="wakeUpAt8">
+            <input type="hidden" name="wakeUpAt8" value="" />
+            <button type="button" class="binary-btn" data-field="wakeUpAt8" data-value="1">1</button>
+            <button type="button" class="binary-btn" data-field="wakeUpAt8" data-value="0">0</button>
+          </div>
 
           <label>2) Did you get 7.5 hours of sleep?</label>
-          <select name="sleep75Hours">
-            <option value="" selected disabled>Select...</option>
-            <option value="1">1</option>
-            <option value="0">0</option>
-          </select>
+          <div class="binary-input" data-field="sleep75Hours">
+            <input type="hidden" name="sleep75Hours" value="" />
+            <button type="button" class="binary-btn" data-field="sleep75Hours" data-value="1">1</button>
+            <button type="button" class="binary-btn" data-field="sleep75Hours" data-value="0">0</button>
+          </div>
 
           <label>3) Did you meditate?</label>
-          <select name="meditate">
-            <option value="" selected disabled>Select...</option>
-            <option value="1">1</option>
-            <option value="0">0</option>
-          </select>
+          <div class="binary-input" data-field="meditate">
+            <input type="hidden" name="meditate" value="" />
+            <button type="button" class="binary-btn" data-field="meditate" data-value="1">1</button>
+            <button type="button" class="binary-btn" data-field="meditate" data-value="0">0</button>
+          </div>
 
           <label>4) Did you workout?</label>
-          <select name="workout">
-            <option value="" selected disabled>Select...</option>
-            <option value="1">1</option>
-            <option value="0">0</option>
-          </select>
+          <div class="binary-input" data-field="workout">
+            <input type="hidden" name="workout" value="" />
+            <button type="button" class="binary-btn" data-field="workout" data-value="1">1</button>
+            <button type="button" class="binary-btn" data-field="workout" data-value="0">0</button>
+          </div>
 
           <button id="updateMorningBtn" type="button" class="submit-btn">Update 8:00 AM Check-In</button>
           <p id="morningStatus" class="status-text"></p>
         </section>
 
         <section id="daily" class="panel">
-          <h2>9:30 AM Check-In</h2>
-          <label>5) Did you work on Coby Pal Anim Studios?</label>
-          <select name="workOnStudio">
-            <option value="" selected disabled>Select...</option>
-            <option value="1">1</option>
-            <option value="0">0</option>
-          </select>
+          <h2>9:30 PM Check-In</h2>
+          <label>5) Did you work on your business?</label>
+          <div class="binary-input" data-field="workOnStudio">
+            <input type="hidden" name="workOnStudio" value="" />
+            <button type="button" class="binary-btn" data-field="workOnStudio" data-value="1">1</button>
+            <button type="button" class="binary-btn" data-field="workOnStudio" data-value="0">0</button>
+          </div>
 
           <label>6) Did you consume marijuana/drugs?</label>
-          <select name="consumeDrugs">
-            <option value="" selected disabled>Select...</option>
-            <option value="1">1</option>
-            <option value="0">0</option>
-          </select>
+          <div class="binary-input" data-field="consumeDrugs">
+            <input type="hidden" name="consumeDrugs" value="" />
+            <button type="button" class="binary-btn" data-field="consumeDrugs" data-value="1">1</button>
+            <button type="button" class="binary-btn" data-field="consumeDrugs" data-value="0">0</button>
+          </div>
 
           <label>7) Did you adhere to your social media limits?</label>
-          <select name="socialLimits">
-            <option value="" selected disabled>Select...</option>
-            <option value="1">1</option>
-            <option value="0">0</option>
-          </select>
+          <div class="binary-input" data-field="socialLimits">
+            <input type="hidden" name="socialLimits" value="" />
+            <button type="button" class="binary-btn" data-field="socialLimits" data-value="1">1</button>
+            <button type="button" class="binary-btn" data-field="socialLimits" data-value="0">0</button>
+          </div>
 
           <label>8) Did you stretch?</label>
-          <select name="stretch">
-            <option value="" selected disabled>Select...</option>
-            <option value="1">1</option>
-            <option value="0">0</option>
-          </select>
+          <div class="binary-input" data-field="stretch">
+            <input type="hidden" name="stretch" value="" />
+            <button type="button" class="binary-btn" data-field="stretch" data-value="1">1</button>
+            <button type="button" class="binary-btn" data-field="stretch" data-value="0">0</button>
+          </div>
 
           <label>9) Did you engage in the hair care protocol?</label>
-          <select name="hairCare">
-            <option value="" selected disabled>Select...</option>
-            <option value="1">1</option>
-            <option value="0">0</option>
-          </select>
+          <div class="binary-input" data-field="hairCare">
+            <input type="hidden" name="hairCare" value="" />
+            <button type="button" class="binary-btn" data-field="hairCare" data-value="1">1</button>
+            <button type="button" class="binary-btn" data-field="hairCare" data-value="0">0</button>
+          </div>
 
           <label>10) Did you gratitude journal, vision board, or pray?</label>
-          <select name="gratitudePrayer">
-            <option value="" selected disabled>Select...</option>
-            <option value="1">1</option>
-            <option value="0">0</option>
-          </select>
+          <div class="binary-input" data-field="gratitudePrayer">
+            <input type="hidden" name="gratitudePrayer" value="" />
+            <button type="button" class="binary-btn" data-field="gratitudePrayer" data-value="1">1</button>
+            <button type="button" class="binary-btn" data-field="gratitudePrayer" data-value="0">0</button>
+          </div>
 
           <label>11) Well-being out of 10</label>
           <input name="wellbeing" type="number" min="0" max="10" step="1" />
@@ -114,8 +114,8 @@
       </form>
     </main>
 
-    <script src="config.js?v=20260217-1"></script>
+    <script src="config.js?v=20260217-2"></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script src="app.js?v=20260217-1"></script>
+    <script src="app.js?v=20260217-2"></script>
   </body>
 </html>

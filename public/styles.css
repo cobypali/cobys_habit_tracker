@@ -70,6 +70,37 @@ button:hover {
   background: var(--accent-strong);
 }
 
+.binary-input {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.binary-input input[type="hidden"] {
+  display: none;
+}
+
+.binary-btn {
+  flex: 1;
+  width: auto;
+  border: 1px solid #cbd5e1;
+  background: #e2e8f0;
+  color: var(--text);
+}
+
+.binary-btn:hover {
+  background: #cbd5e1;
+}
+
+.binary-btn.is-selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.binary-btn.is-selected:hover {
+  background: var(--accent-strong);
+}
+
 .submit-btn {
   margin-top: 0.4rem;
 }

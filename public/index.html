@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Habit Tracker</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header>
+        <h1>Daily Habit Tracker</h1>
+        <p>Inputs are sent to your Google Sheet.</p>
+        <button id="enablePushBtn" type="button">Enable Push Notifications</button>
+        <p id="pushStatus" class="status-text"></p>
+      </header>
+
+      <form id="habitForm">
+        <section id="morning" class="panel">
+          <h2>8:00 AM Check-In</h2>
+          <label>1) Did you wake up at 8?</label>
+          <select name="wakeUpAt8" required>
+            <option value="1">1</option>
+            <option value="0">0</option>
+          </select>
+
+          <label>2) Did you get 7.5 hours of sleep?</label>
+          <select name="sleep75Hours" required>
+            <option value="1">1</option>
+            <option value="0">0</option>
+          </select>
+
+          <label>3) Did you meditate?</label>
+          <select name="meditate" required>
+            <option value="1">1</option>
+            <option value="0">0</option>
+          </select>
+
+          <label>4) Did you workout?</label>
+          <select name="workout" required>
+            <option value="1">1</option>
+            <option value="0">0</option>
+          </select>
+        </section>
+
+        <section id="daily" class="panel">
+          <h2>9:30 AM Check-In</h2>
+          <label>5) Did you work on Coby Pal Anim Studios?</label>
+          <select name="workOnStudio" required>
+            <option value="1">1</option>
+            <option value="0">0</option>
+          </select>
+
+          <label>6) Did you consume marijuana/drugs?</label>
+          <select name="consumeDrugs" required>
+            <option value="1">1</option>
+            <option value="0">0</option>
+          </select>
+
+          <label>7) Did you adhere to your social media limits?</label>
+          <select name="socialLimits" required>
+            <option value="1">1</option>
+            <option value="0">0</option>
+          </select>
+
+          <label>8) Did you stretch?</label>
+          <select name="stretch" required>
+            <option value="1">1</option>
+            <option value="0">0</option>
+          </select>
+
+          <label>9) Did you engage in the hair care protocol?</label>
+          <select name="hairCare" required>
+            <option value="1">1</option>
+            <option value="0">0</option>
+          </select>
+
+          <label>10) Did you gratitude journal, vision board, or pray?</label>
+          <select name="gratitudePrayer" required>
+            <option value="1">1</option>
+            <option value="0">0</option>
+          </select>
+
+          <label>11) Well-being out of 10</label>
+          <input name="wellbeing" type="number" min="0" max="10" step="1" required />
+
+          <label>12) Notes on the day</label>
+          <textarea name="notes" rows="4" placeholder="Write your notes..."></textarea>
+        </section>
+
+        <button type="submit" class="submit-btn">Save to Google Sheet</button>
+        <p id="saveStatus" class="status-text"></p>
+      </form>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script src="app.js"></script>
+  </body>
+</html>

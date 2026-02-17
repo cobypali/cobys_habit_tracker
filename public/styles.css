@@ -1,0 +1,88 @@
+:root {
+  --bg: #f7f6f2;
+  --panel: #ffffff;
+  --text: #1f2937;
+  --accent: #0f766e;
+  --accent-strong: #115e59;
+  --border: #d6d3d1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at top right, #d1fae5, transparent 40%), var(--bg);
+}
+
+.app-shell {
+  max-width: 760px;
+  margin: 2rem auto;
+  padding: 1.25rem;
+}
+
+header {
+  margin-bottom: 1rem;
+}
+
+h1 {
+  margin: 0 0 0.4rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-top: 0.8rem;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+select,
+input,
+textarea,
+button {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  padding: 0.65rem 0.7rem;
+  font-size: 1rem;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+button:hover {
+  background: var(--accent-strong);
+}
+
+.submit-btn {
+  margin-top: 0.4rem;
+}
+
+.status-text {
+  min-height: 1.3rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    margin: 0;
+    padding: 1rem;
+  }
+}

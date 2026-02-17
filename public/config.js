@@ -1,0 +1,4 @@
+window.APP_CONFIG = {
+  appsScriptUrl: "PASTE_YOUR_GOOGLE_APPS_SCRIPT_EXEC_URL_HERE",
+  oneSignalAppId: "PASTE_YOUR_ONESIGNAL_APP_ID_HERE"
+};

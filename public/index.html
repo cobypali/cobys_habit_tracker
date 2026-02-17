@@ -3,8 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f172a" />
+    <meta name="theme-color" content="#0B1220" />
     <title>Coby's Habit Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -96,6 +102,10 @@
             <button type="button" class="binary-btn" data-field="gratitudePrayer" data-value="0">0</button>
           </div>
 
+          <button id="saveHabitsBtn" type="button" class="submit-btn">Save Habits 1-10 to Google Sheet</button>
+          <p id="habitsStatus" class="status-text"></p>
+
+          <h3>Optional Entries (11-14)</h3>
           <label>11) Well-being out of 10</label>
           <input name="wellbeing" type="number" min="0" max="10" step="1" />
 
@@ -109,7 +119,7 @@
           <input name="weight" type="text" placeholder="Enter weight" />
         </section>
 
-        <button type="submit" class="submit-btn">Save to Google Sheet</button>
+        <button type="submit" class="submit-btn">Save Full Entry to Google Sheet</button>
         <p id="saveStatus" class="status-text"></p>
       </form>
     </main>

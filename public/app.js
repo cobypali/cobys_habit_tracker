@@ -1,22 +1,28 @@
 const pushButton = document.getElementById("enablePushBtn");
 const pushStatus = document.getElementById("pushStatus");
 const morningStatus = document.getElementById("morningStatus");
+const habitsStatus = document.getElementById("habitsStatus");
 const saveStatus = document.getElementById("saveStatus");
 const form = document.getElementById("habitForm");
 const morningUpdateButton = document.getElementById("updateMorningBtn");
+const saveHabitsButton = document.getElementById("saveHabitsBtn");
 
 const appConfig = window.APP_CONFIG || {};
 const appsScriptUrl = appConfig.appsScriptUrl || "";
 const oneSignalAppId = appConfig.oneSignalAppId || "";
 const morningFieldNames = ["wakeUpAt8", "sleep75Hours", "meditate", "workout"];
-const fullDayFieldNames = [
+const binaryFieldNames = [
   ...morningFieldNames,
   "workOnStudio",
   "consumeDrugs",
   "socialLimits",
   "stretch",
   "hairCare",
-  "gratitudePrayer",
+  "gratitudePrayer"
+];
+const coreHabitFieldNames = [...binaryFieldNames];
+const fullDayFieldNames = [
+  ...binaryFieldNames,
   "wellbeing",
   "notes",
   "activities",
@@ -29,6 +35,7 @@ function init() {
   initOneSignal();
   initBinaryInputs();
   scheduleInAppNotifications();
+  loadTodayValues();
 }
 
 function initOneSignal() {
@@ -112,6 +119,18 @@ morningUpdateButton.addEventListener("click", async () => {
   await sendPayload(payload, morningStatus, "8:00 AM check-in sent.");
 });
 
+if (saveHabitsButton) {
+  saveHabitsButton.addEventListener("click", async () => {
+    const payload = buildPayload(coreHabitFieldNames);
+    if (!hasAtLeastOneHabitValue(payload)) {
+      habitsStatus.textContent = "Select at least one habit (1-10) before saving.";
+      return;
+    }
+
+    await sendPayload(payload, habitsStatus, "Habits 1-10 saved.");
+  });
+}
+
 function initBinaryInputs() {
   const binaryButtons = form.querySelectorAll(".binary-btn");
   binaryButtons.forEach((button) => {
@@ -189,6 +208,93 @@ async function sendPayload(payload, statusElement, successMessage) {
   } catch (error) {
     console.error(error);
     statusElement.textContent = "Save failed. Check Apps Script deployment.";
+  }
+}
+
+async function loadTodayValues() {
+  if (!appsScriptUrl || appsScriptUrl.includes("PASTE_")) {
+    return;
+  }
+
+  try {
+    const payload = await fetchTodayValuesJsonp();
+    if (!payload || payload.ok !== true || payload.exists !== true || !payload.values) {
+      return;
+    }
+
+    applySavedValues(payload.values);
+  } catch (error) {
+    console.error("Failed to load existing values:", error);
+  }
+}
+
+function fetchTodayValuesJsonp() {
+  return new Promise((resolve, reject) => {
+    const callbackName = "__habitTrackerPrefill_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+    const query = new URLSearchParams({
+      action: "getToday",
+      clientDateKey: getTodayKeyPacific(),
+      callback: callbackName
+    });
+    const separator = appsScriptUrl.includes("?") ? "&" : "?";
+    const src = appsScriptUrl + separator + query.toString();
+    const script = document.createElement("script");
+    let timeoutId = 0;
+
+    function cleanup() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      delete window[callbackName];
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    }
+
+    window[callbackName] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("JSONP request failed"));
+    };
+
+    timeoutId = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("JSONP request timed out"));
+    }, 10000);
+
+    script.src = src;
+    document.head.appendChild(script);
+  });
+}
+
+function applySavedValues(values) {
+  if (!values || typeof values !== "object") {
+    return;
+  }
+
+  for (const fieldName of binaryFieldNames) {
+    if (!Object.prototype.hasOwnProperty.call(values, fieldName)) {
+      continue;
+    }
+    const value = String(values[fieldName]).trim();
+    if (value === "0" || value === "1") {
+      setBinaryFieldValue(fieldName, value);
+    }
+  }
+
+  for (const fieldName of ["wellbeing", "notes", "activities", "weight"]) {
+    if (!Object.prototype.hasOwnProperty.call(values, fieldName)) {
+      continue;
+    }
+
+    const field = form.elements.namedItem(fieldName);
+    if (field) {
+      field.value = String(values[fieldName]);
+    }
   }
 }
 

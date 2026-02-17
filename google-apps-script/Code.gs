@@ -47,8 +47,21 @@ function doPost(e) {
   }
 }
 
-function doGet() {
-  return jsonResponse({ ok: true, status: "alive" });
+function doGet(e) {
+  try {
+    var p = (e && e.parameter) || {};
+    if (String(p.action || "") === "getToday") {
+      var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+      var requestDateKey = normalizeRequestDateKey(p.clientDateKey) || getTodayKeyPST();
+      var result = getValuesForDate(sheet, requestDateKey);
+      return respond(result, p.callback);
+    }
+
+    return respond({ ok: true, status: "alive" }, p.callback);
+  } catch (err) {
+    var fallback = { ok: false, error: String(err) };
+    return respond(fallback, e && e.parameter ? e.parameter.callback : "");
+  }
 }
 
 function findOrCreateTodayRow(sheet, todayKey) {
@@ -68,6 +81,39 @@ function findOrCreateTodayRow(sheet, todayKey) {
 
   sheet.appendRow([todayKey]);
   return sheet.getLastRow();
+}
+
+function findRowByDateKey(sheet, dateKey) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 1) return 0;
+
+  var dateValues = sheet.getRange(1, 1, lastRow, 1).getValues();
+  for (var i = 0; i < dateValues.length; i++) {
+    if (normalizeDateCellToKey(dateValues[i][0]) === dateKey) {
+      return i + 1;
+    }
+  }
+  return 0;
+}
+
+function getValuesForDate(sheet, dateKey) {
+  var row = findRowByDateKey(sheet, dateKey);
+  if (!row) {
+    return { ok: true, exists: false, dateKey: dateKey, values: {} };
+  }
+
+  var values = {};
+  for (var key in FIELD_TO_COLUMN) {
+    if (!FIELD_TO_COLUMN.hasOwnProperty(key)) continue;
+    var colNumber = columnToNumber(FIELD_TO_COLUMN[key]);
+    var cellValue = sheet.getRange(row, colNumber).getValue();
+    var normalized = normalizeCellForField(key, cellValue);
+    if (normalized !== "") {
+      values[key] = normalized;
+    }
+  }
+
+  return { ok: true, exists: true, dateKey: dateKey, row: row, values: values };
 }
 
 function buildUpdates(params, targetRow) {
@@ -97,6 +143,17 @@ function normalizeByField(fieldName, value) {
   if (fieldName === "notes") return String(value || "").trim();
   if (fieldName === "timestamp") return String(value || "").trim();
   return normalizeBinary(value);
+}
+
+function normalizeCellForField(fieldName, value) {
+  if (fieldName === "wellbeing") {
+    var wellbeing = normalizeWellbeing(value);
+    return wellbeing === "" ? "" : String(wellbeing);
+  }
+  if (fieldName === "notes" || fieldName === "activities" || fieldName === "weight") {
+    return String(value || "").trim();
+  }
+  return normalizeBinary(value) === "" ? "" : String(normalizeBinary(value));
 }
 
 function normalizeRequestDateKey(value) {
@@ -169,4 +226,15 @@ function columnToNumber(column) {
 
 function jsonResponse(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function respond(obj, callback) {
+  var cb = String(callback || "").trim();
+  if (!cb) return jsonResponse(obj);
+
+  var safeCallback = cb.match(/^[A-Za-z_$][0-9A-Za-z_$\.]*$/);
+  if (!safeCallback) return jsonResponse({ ok: false, error: "Invalid callback" });
+
+  var payload = cb + "(" + JSON.stringify(obj) + ");";
+  return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JAVASCRIPT);
 }

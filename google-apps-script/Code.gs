@@ -133,6 +133,7 @@ function getValuesForDate(sheet, dateKey) {
 
 function getHabitInsights(sheet) {
   var lastRow = sheet.getLastRow();
+  var percentRow = 370;
   if (lastRow < 1) {
     return HABIT_DEFINITIONS.map(function (habit) {
       return {
@@ -158,16 +159,8 @@ function getHabitInsights(sheet) {
   return HABIT_DEFINITIONS.map(function (habit) {
     var colNumber = columnToNumber(FIELD_TO_COLUMN[habit.key]);
     var colIndex = colNumber - 1;
-    var totalDays = datedRows.length;
-    var doneDays = 0;
+    var completionFromRow = formatCompletionFromRowValue(sheet.getRange(percentRow, colNumber).getValue());
     var streak = 0;
-
-    for (var r = 0; r < datedRows.length; r++) {
-      var value = normalizeBinary(datedRows[r][colIndex]);
-      if (value === 1) {
-        doneDays++;
-      }
-    }
 
     for (var x = datedRows.length - 1; x >= 0; x--) {
       var streakValue = normalizeBinary(datedRows[x][colIndex]);
@@ -178,16 +171,34 @@ function getHabitInsights(sheet) {
       }
     }
 
-    var percent = totalDays > 0 ? Math.round((doneDays / totalDays) * 100) : 0;
-
     return {
       key: habit.key,
       label: habit.label,
-      completionPercent: percent,
-      completionDisplay: String(percent) + "%",
+      completionPercent: completionFromRow.percent,
+      completionDisplay: completionFromRow.display,
       currentStreak: streak
     };
   });
+}
+
+function formatCompletionFromRowValue(value) {
+  var text = String(value || "").trim();
+  if (!text) return { percent: 0, display: "0%" };
+
+  if (/%$/.test(text)) {
+    var explicitPercent = Number(text.replace("%", "").trim());
+    if (isNaN(explicitPercent)) return { percent: 0, display: "0%" };
+    return { percent: explicitPercent, display: explicitPercent + "%" };
+  }
+
+  var n = Number(text);
+  if (isNaN(n)) return { percent: 0, display: "0%" };
+  if (n > 0 && n <= 1) {
+    n = n * 100;
+  }
+
+  var rounded = Math.round(n);
+  return { percent: rounded, display: rounded + "%" };
 }
 
 function getAverageWellbeing(sheet) {

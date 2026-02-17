@@ -6,6 +6,7 @@ const saveStatus = document.getElementById("saveStatus");
 const form = document.getElementById("habitForm");
 const morningUpdateButton = document.getElementById("updateMorningBtn");
 const saveHabitsButton = document.getElementById("saveHabitsBtn");
+const seeInsightsButton = document.getElementById("seeInsightsBtn");
 
 const appConfig = window.APP_CONFIG || {};
 const appsScriptUrl = appConfig.appsScriptUrl || "";
@@ -88,6 +89,12 @@ pushButton.addEventListener("click", async () => {
     pushStatus.textContent = "Failed to update push settings.";
   }
 });
+
+if (seeInsightsButton) {
+  seeInsightsButton.addEventListener("click", () => {
+    window.location.href = "insights.html";
+  });
+}
 
 function updatePushButtonState(oneSignal) {
   if (!pushButton || !oneSignal || !oneSignal.User || !oneSignal.User.PushSubscription) {

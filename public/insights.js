@@ -1,8 +1,15 @@
 const insightsGrid = document.getElementById("insightsGrid");
 const insightsStatus = document.getElementById("insightsStatus");
 const wellbeingSummary = document.getElementById("wellbeingSummary");
+const backToTrackerButton = document.getElementById("backToTrackerBtn");
 const appConfig = window.APP_CONFIG || {};
 const appsScriptUrl = appConfig.appsScriptUrl || "";
+
+if (backToTrackerButton) {
+  backToTrackerButton.addEventListener("click", () => {
+    window.location.href = "index.html";
+  });
+}
 
 loadInsights();
 

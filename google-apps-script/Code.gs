@@ -3,7 +3,6 @@ var SHEET_NAME = "Habits 2026";
 var TIMEZONE = "America/Los_Angeles";
 
 var FIELD_TO_COLUMN = {
-  timestamp: "B",
   wakeUpAt8: "C",
   sleep75Hours: "D",
   meditate: "E",
@@ -24,8 +23,17 @@ function doPost(e) {
   try {
     var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
     var p = e.parameter || {};
+    var todayKey = getTodayKeyPST();
+    var requestDateKey = normalizeRequestDateKey(p.clientDateKey);
 
-    var targetRow = findOrCreateTodayRow(sheet);
+    if (!requestDateKey) {
+      throw new Error("Missing clientDateKey");
+    }
+    if (requestDateKey !== todayKey) {
+      throw new Error("Date mismatch. Expected " + todayKey + " but received " + requestDateKey);
+    }
+
+    var targetRow = findOrCreateTodayRow(sheet, todayKey);
     var updates = buildUpdates(p, targetRow);
 
     for (var i = 0; i < updates.length; i++) {
@@ -43,8 +51,7 @@ function doGet() {
   return jsonResponse({ ok: true, status: "alive" });
 }
 
-function findOrCreateTodayRow(sheet) {
-  var todayKey = getTodayKeyPST();
+function findOrCreateTodayRow(sheet, todayKey) {
   var lastRow = sheet.getLastRow();
 
   if (lastRow < 1) {
@@ -90,6 +97,23 @@ function normalizeByField(fieldName, value) {
   if (fieldName === "notes") return String(value || "").trim();
   if (fieldName === "timestamp") return String(value || "").trim();
   return normalizeBinary(value);
+}
+
+function normalizeRequestDateKey(value) {
+  var text = String(value || "").trim();
+  if (!text) return "";
+
+  var iso = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (iso) {
+    return Number(iso[2]) + "/" + Number(iso[3]);
+  }
+
+  var mmdd = text.match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (mmdd) {
+    return Number(mmdd[1]) + "/" + Number(mmdd[2]);
+  }
+
+  return "";
 }
 
 function getTodayKeyPST() {

@@ -17,6 +17,11 @@ This version is fully free:
    - `Who has access`: Anyone
 6. Copy the Web App `exec` URL.
 
+Security and privacy note:
+- Keep the Google Sheet itself private (only your Google account can open/view it).
+- Sheet privacy is independent from Web App access. Using `Execute as: Me` allows writes to your private sheet without exposing sheet read access.
+- If you switch Web App access to `Only myself`, cross-site browser auth can block requests from your hosted site.
+
 ## 2) Configure frontend
 
 1. Edit `public/config.js`:

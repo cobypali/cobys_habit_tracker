@@ -147,12 +147,17 @@ async function sendPayload(payload, statusElement, successMessage) {
     return;
   }
 
-  const body = new URLSearchParams(payload);
+  const payloadWithDate = {
+    ...payload,
+    clientDateKey: getTodayKeyPacific()
+  };
+  const body = new URLSearchParams(payloadWithDate);
 
   try {
     await fetch(appsScriptUrl, {
       method: "POST",
       mode: "no-cors",
+      credentials: "include",
       body
     });
     statusElement.textContent = successMessage;
@@ -160,6 +165,15 @@ async function sendPayload(payload, statusElement, successMessage) {
     console.error(error);
     statusElement.textContent = "Save failed. Check Apps Script deployment.";
   }
+}
+
+function getTodayKeyPacific() {
+  var formatter = new Intl.DateTimeFormat("en-US", {
+    month: "numeric",
+    day: "numeric",
+    timeZone: "America/Los_Angeles"
+  });
+  return formatter.format(new Date());
 }
 
 function scheduleInAppNotifications() {

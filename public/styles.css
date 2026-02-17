@@ -176,6 +176,10 @@ button:hover {
   margin-top: 0.4rem;
 }
 
+#seeInsightsBtn {
+  margin-top: 0.7rem;
+}
+
 .status-text {
   min-height: 1.3rem;
   margin: 0.5rem 0 0;

@@ -4,6 +4,8 @@ const wellbeingSummary = document.getElementById("wellbeingSummary");
 const backToTrackerButton = document.getElementById("backToTrackerBtn");
 const appConfig = window.APP_CONFIG || {};
 const appsScriptUrl = appConfig.appsScriptUrl || "";
+const insightsCacheKey = "habitTrackerInsightsCache";
+const insightsCacheTtlMs = 5 * 60 * 1000;
 
 if (backToTrackerButton) {
   backToTrackerButton.addEventListener("click", () => {
@@ -19,7 +21,17 @@ async function loadInsights() {
     return;
   }
 
-  insightsStatus.textContent = "Loading insights...";
+  const cached = readInsightsCache();
+  if (cached && cached.payload && Array.isArray(cached.payload.habits)) {
+    renderInsights(cached.payload.habits, cached.payload.averageWellbeing);
+    insightsStatus.textContent = "";
+
+    if (Date.now() - cached.cachedAt < insightsCacheTtlMs) {
+      return;
+    }
+  } else {
+    insightsStatus.textContent = "Loading insights...";
+  }
 
   try {
     const payload = await fetchInsightsJsonp();
@@ -28,11 +40,21 @@ async function loadInsights() {
       return;
     }
 
+    sessionStorage.setItem(
+      insightsCacheKey,
+      JSON.stringify({
+        cachedAt: Date.now(),
+        payload
+      })
+    );
+
     renderInsights(payload.habits, payload.averageWellbeing);
     insightsStatus.textContent = "";
   } catch (error) {
     console.error(error);
-    insightsStatus.textContent = "Failed to load insights.";
+    if (!cached) {
+      insightsStatus.textContent = "Failed to load insights.";
+    }
   }
 }
 
@@ -71,7 +93,7 @@ function fetchInsightsJsonp() {
     timeoutId = window.setTimeout(() => {
       cleanup();
       reject(new Error("JSONP request timed out"));
-    }, 10000);
+    }, 8000);
 
     script.src = src;
     document.head.appendChild(script);
@@ -85,7 +107,7 @@ function renderInsights(habits, averageWellbeing) {
     const card = document.createElement("article");
     card.className = "insight-card";
     card.innerHTML =
-      '<h3>' +
+      "<h3>" +
       escapeHtml(habit.label || "") +
       "</h3>" +
       '<div class="insight-metrics">' +
@@ -118,13 +140,31 @@ function renderWellbeingSummary(averageWellbeing) {
   const count = averageWellbeing && typeof averageWellbeing.count === "number" ? averageWellbeing.count : 0;
 
   wellbeingSummary.innerHTML =
-    '<h3>Average Well-being (11)</h3>' +
+    "<h3>Average Well-being (11)</h3>" +
     '<p class="wellbeing-value">' +
     escapeHtml(avgDisplay) +
     " / 10</p>" +
     '<p class="wellbeing-count">Based on ' +
     escapeHtml(String(count)) +
     " day(s).</p>";
+}
+
+function readInsightsCache() {
+  try {
+    const raw = sessionStorage.getItem(insightsCacheKey);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || !parsed.payload) {
+      return null;
+    }
+
+    return parsed;
+  } catch (error) {
+    return null;
+  }
 }
 
 function escapeHtml(value) {

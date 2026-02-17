@@ -67,9 +67,11 @@ function doGet(e) {
     }
     if (String(p.action || "") === "getInsights") {
       var insightsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
-      var insights = getHabitInsights(insightsSheet);
-      var averageWellbeing = getAverageWellbeing(insightsSheet);
-      return respond({ ok: true, habits: insights, averageWellbeing: averageWellbeing }, p.callback);
+      var insightsResponse = getInsightsResponse(insightsSheet);
+      return respond(
+        { ok: true, habits: insightsResponse.habits, averageWellbeing: insightsResponse.averageWellbeing },
+        p.callback
+      );
     }
 
     return respond({ ok: true, status: "alive" }, p.callback);
@@ -179,6 +181,96 @@ function getHabitInsights(sheet) {
       currentStreak: streak
     };
   });
+}
+
+function getInsightsResponse(sheet) {
+  var lastRow = sheet.getLastRow();
+  var percentRow = 370;
+  if (lastRow < 1) {
+    return {
+      habits: HABIT_DEFINITIONS.map(function (habit) {
+        return {
+          key: habit.key,
+          label: habit.label,
+          completionPercent: 0,
+          completionDisplay: "0%",
+          currentStreak: 0
+        };
+      }),
+      averageWellbeing: { value: 0, display: "0.0", count: 0 }
+    };
+  }
+
+  var lastColumn = columnToNumber("P");
+  var rows = sheet.getRange(1, 1, lastRow, lastColumn).getValues();
+  var habitColIndexes = HABIT_DEFINITIONS.map(function (habit) {
+    return columnToNumber(FIELD_TO_COLUMN[habit.key]) - 1;
+  });
+  var wellbeingColIndex = columnToNumber(FIELD_TO_COLUMN.wellbeing) - 1;
+  var completionByHabit = {};
+  var streaks = {};
+  var streakOpen = {};
+  var sumWellbeing = 0;
+  var countWellbeing = 0;
+
+  for (var h = 0; h < HABIT_DEFINITIONS.length; h++) {
+    var habitKey = HABIT_DEFINITIONS[h].key;
+    var habitColNumber = columnToNumber(FIELD_TO_COLUMN[habitKey]);
+    completionByHabit[habitKey] = formatCompletionFromRowValue(sheet.getRange(percentRow, habitColNumber).getValue());
+    streaks[habitKey] = 0;
+    streakOpen[habitKey] = true;
+  }
+
+  for (var i = rows.length - 1; i >= 0; i--) {
+    var row = rows[i];
+    if (!normalizeDateCellToKey(row[0])) {
+      continue;
+    }
+
+    var wellbeing = Number(row[wellbeingColIndex]);
+    if (!isNaN(wellbeing) && wellbeing >= 0 && wellbeing <= 10) {
+      sumWellbeing += wellbeing;
+      countWellbeing++;
+    }
+
+    for (var j = 0; j < HABIT_DEFINITIONS.length; j++) {
+      var habit = HABIT_DEFINITIONS[j];
+      if (!streakOpen[habit.key]) {
+        continue;
+      }
+
+      var streakValue = normalizeBinary(row[habitColIndexes[j]]);
+      if (streakValue === 1) {
+        streaks[habit.key]++;
+      } else {
+        streakOpen[habit.key] = false;
+      }
+    }
+  }
+
+  var habits = HABIT_DEFINITIONS.map(function (habit) {
+    var completion = completionByHabit[habit.key] || { percent: 0, display: "0%" };
+    return {
+      key: habit.key,
+      label: habit.label,
+      completionPercent: completion.percent,
+      completionDisplay: completion.display,
+      currentStreak: streaks[habit.key] || 0
+    };
+  });
+
+  if (countWellbeing === 0) {
+    return {
+      habits: habits,
+      averageWellbeing: { value: 0, display: "0.0", count: 0 }
+    };
+  }
+
+  var avgWellbeing = sumWellbeing / countWellbeing;
+  return {
+    habits: habits,
+    averageWellbeing: { value: avgWellbeing, display: avgWellbeing.toFixed(1), count: countWellbeing }
+  };
 }
 
 function formatCompletionFromRowValue(value) {

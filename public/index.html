@@ -25,8 +25,8 @@
       </header>
 
       <form id="habitForm">
-        <section id="morning" class="panel">
-          <h2>8:00 AM Check-In</h2>
+        <section id="daily" class="panel">
+          <h2>Habits 1-10</h2>
           <label>1) Did you wake up at 8?</label>
           <div class="binary-input" data-field="wakeUpAt8">
             <input type="hidden" name="wakeUpAt8" value="" />
@@ -55,12 +55,6 @@
             <button type="button" class="binary-btn" data-field="workout" data-value="0">No</button>
           </div>
 
-          <button id="updateMorningBtn" type="button" class="submit-btn">Update 8:00 AM Check-In</button>
-          <p id="morningStatus" class="status-text"></p>
-        </section>
-
-        <section id="daily" class="panel">
-          <h2>9:30 PM Check-In</h2>
           <label>5) Did you work on your business?</label>
           <div class="binary-input" data-field="workOnStudio">
             <input type="hidden" name="workOnStudio" value="" />
@@ -102,7 +96,6 @@
             <button type="button" class="binary-btn" data-field="gratitudePrayer" data-value="1">Yes</button>
             <button type="button" class="binary-btn" data-field="gratitudePrayer" data-value="0">No</button>
           </div>
-
           <button id="saveHabitsBtn" type="button" class="submit-btn">Save Habits 1-10 to Google Sheet</button>
           <p id="habitsStatus" class="status-text"></p>
 
@@ -127,6 +120,6 @@
 
     <script src="config.js?v=20260217-2"></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script src="app.js?v=20260217-3"></script>
+    <script src="app.js?v=20260217-4"></script>
   </body>
 </html>

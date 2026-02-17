@@ -12,13 +12,21 @@
       rel="stylesheet"
     />
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css?v=20260217-2" />
+    <link rel="stylesheet" href="styles.css?v=20260217-3" />
   </head>
   <body>
     <main class="app-shell">
       <header>
         <h1>Coby's Habit Tracker</h1>
-        <p>Inputs are sent to your Google Sheet.</p>
+        <p>
+          Inputs are sent to your
+          <a
+            href="https://docs.google.com/spreadsheets/d/1PxqMgro5uWJBAbR1ey4atBE_jx-WhI0AAxbAY7zqbVU/edit?gid=447613652#gid=447613652"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Google Sheet</a
+          >.
+        </p>
         <button id="enablePushBtn" type="button">Enable Push Notifications</button>
         <button id="seeInsightsBtn" type="button">See Insights</button>
         <p id="pushStatus" class="status-text"></p>

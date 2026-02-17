@@ -51,6 +51,10 @@ h2 {
   font-weight: 600;
 }
 
+.panel h2 {
+  margin: 0 0 0.5rem;
+}
+
 p {
   color: var(--muted-strong);
 }
@@ -178,6 +182,11 @@ button:hover {
 
 #seeInsightsBtn {
   margin-top: 0.7rem;
+}
+
+#pushStatus {
+  min-height: 0;
+  margin-top: 0.35rem;
 }
 
 .status-text {

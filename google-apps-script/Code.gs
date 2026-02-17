@@ -14,8 +14,10 @@ var FIELD_TO_COLUMN = {
   stretch: "J",
   hairCare: "K",
   gratitudePrayer: "L",
-  wellbeing: "M",
-  notes: "N"
+  wellbeing: "P",
+  notes: "Q",
+  activities: "R",
+  weight: "S"
 };
 
 function doPost(e) {
@@ -83,6 +85,8 @@ function buildUpdates(params, targetRow) {
 
 function normalizeByField(fieldName, value) {
   if (fieldName === "wellbeing") return normalizeWellbeing(value);
+  if (fieldName === "activities") return String(value || "").trim();
+  if (fieldName === "weight") return String(value || "").trim();
   if (fieldName === "notes") return String(value || "").trim();
   if (fieldName === "timestamp") return String(value || "").trim();
   return normalizeBinary(value);

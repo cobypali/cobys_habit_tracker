@@ -67,7 +67,7 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
-  const payload = buildPayload([...fullDayRequiredFieldNames, "notes"]);
+  const payload = buildPayload([...fullDayRequiredFieldNames, "notes", "activities", "weight"]);
   await sendPayload(payload, saveStatus, "Sent. Confirm in Google Sheet.");
 });
 

@@ -9,7 +9,7 @@ const appConfig = window.APP_CONFIG || {};
 const appsScriptUrl = appConfig.appsScriptUrl || "";
 const oneSignalAppId = appConfig.oneSignalAppId || "";
 const morningFieldNames = ["wakeUpAt8", "sleep75Hours", "meditate", "workout"];
-const fullDayRequiredFieldNames = [
+const fullDayFieldNames = [
   ...morningFieldNames,
   "workOnStudio",
   "consumeDrugs",
@@ -17,7 +17,10 @@ const fullDayRequiredFieldNames = [
   "stretch",
   "hairCare",
   "gratitudePrayer",
-  "wellbeing"
+  "wellbeing",
+  "notes",
+  "activities",
+  "weight"
 ];
 
 init();
@@ -63,20 +66,22 @@ pushButton.addEventListener("click", async () => {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!validateRequiredFields(fullDayRequiredFieldNames, saveStatus, "Complete all required fields before saving.")) {
+  const payload = buildPayload(fullDayFieldNames);
+  if (!hasAtLeastOneHabitValue(payload)) {
+    saveStatus.textContent = "Select or enter at least one field before saving.";
     return;
   }
 
-  const payload = buildPayload([...fullDayRequiredFieldNames, "notes", "activities", "weight"]);
   await sendPayload(payload, saveStatus, "Sent. Confirm in Google Sheet.");
 });
 
 morningUpdateButton.addEventListener("click", async () => {
-  if (!validateRequiredFields(morningFieldNames, morningStatus, "Complete questions 1-4 before updating 8:00 AM check-in.")) {
+  const payload = buildPayload(morningFieldNames);
+  if (!hasAtLeastOneHabitValue(payload)) {
+    morningStatus.textContent = "Select at least one 8:00 AM field before updating.";
     return;
   }
 
-  const payload = buildPayload(morningFieldNames);
   payload.checkInType = "8am";
   await sendPayload(payload, morningStatus, "8:00 AM check-in sent.");
 });
@@ -89,21 +94,6 @@ function getFieldValue(name) {
   return String(field.value || "").trim();
 }
 
-function validateRequiredFields(fieldNames, statusElement, message) {
-  for (const name of fieldNames) {
-    if (getFieldValue(name) === "") {
-      statusElement.textContent = message;
-      const field = form.elements.namedItem(name);
-      if (field && typeof field.focus === "function") {
-        field.focus();
-      }
-      return false;
-    }
-  }
-
-  return true;
-}
-
 function buildPayload(fieldNames) {
   const payload = { timestamp: new Date().toISOString() };
   for (const name of fieldNames) {
@@ -113,6 +103,10 @@ function buildPayload(fieldNames) {
     }
   }
   return payload;
+}
+
+function hasAtLeastOneHabitValue(payload) {
+  return Object.keys(payload).some((key) => key !== "timestamp" && key !== "checkInType");
 }
 
 async function sendPayload(payload, statusElement, successMessage) {

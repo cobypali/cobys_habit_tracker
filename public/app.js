@@ -193,7 +193,7 @@ async function sendPayload(payload, statusElement, successMessage) {
 
   const payloadWithDate = {
     ...payload,
-    clientDateKey: getTodayKeyPacific()
+    clientDateKey: getTodayKeyLocal()
   };
   const body = new URLSearchParams(payloadWithDate);
 
@@ -233,7 +233,7 @@ function fetchTodayValuesJsonp() {
     const callbackName = "__habitTrackerPrefill_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
     const query = new URLSearchParams({
       action: "getToday",
-      clientDateKey: getTodayKeyPacific(),
+      clientDateKey: getTodayKeyLocal(),
       callback: callbackName
     });
     const separator = appsScriptUrl.includes("?") ? "&" : "?";
@@ -298,11 +298,10 @@ function applySavedValues(values) {
   }
 }
 
-function getTodayKeyPacific() {
+function getTodayKeyLocal() {
   var formatter = new Intl.DateTimeFormat("en-US", {
     month: "numeric",
-    day: "numeric",
-    timeZone: "America/Los_Angeles"
+    day: "numeric"
   });
   return formatter.format(new Date());
 }

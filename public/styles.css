@@ -4,6 +4,10 @@
   --text: #e6edf7;
   --accent: #3b82f6;
   --accent-hover: #60a5fa;
+  --success: #22c55e;
+  --success-hover: #4ade80;
+  --danger: #ef4444;
+  --danger-hover: #f87171;
   --muted-strong: rgba(230, 237, 247, 0.8);
   --muted: rgba(230, 237, 247, 0.65);
   --border: #1a2438;
@@ -106,6 +110,27 @@ button:hover {
   box-shadow: 0 0 0 3px var(--glow);
 }
 
+.action-link {
+  display: block;
+  width: 100%;
+  margin-top: 0.6rem;
+  border-radius: 8px;
+  border: 0;
+  padding: 0.65rem 0.7rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  background: var(--accent);
+  color: var(--text);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.action-link:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+
 .binary-input {
   display: flex;
   gap: 0.6rem;
@@ -127,14 +152,24 @@ button:hover {
   background: rgba(59, 130, 246, 0.2);
 }
 
-.binary-btn.is-selected {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--text);
+.binary-btn.is-selected[data-value="1"] {
+  background: var(--success);
+  border-color: var(--success);
+  color: #06130b;
 }
 
-.binary-btn.is-selected:hover {
-  background: var(--accent-hover);
+.binary-btn.is-selected[data-value="1"]:hover {
+  background: var(--success-hover);
+}
+
+.binary-btn.is-selected[data-value="0"] {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #220809;
+}
+
+.binary-btn.is-selected[data-value="0"]:hover {
+  background: var(--danger-hover);
 }
 
 .submit-btn {
@@ -145,6 +180,77 @@ button:hover {
   min-height: 1.3rem;
   margin: 0.5rem 0 0;
   font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.insight-card {
+  background: rgba(11, 18, 32, 0.8);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem;
+}
+
+.insight-card h3 {
+  margin: 0 0 0.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.insight-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.metric-box {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.65rem;
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.metric-label {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.metric-value {
+  margin: 0.35rem 0 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.wellbeing-summary {
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem;
+  background: rgba(11, 18, 32, 0.8);
+}
+
+.wellbeing-summary h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.wellbeing-value {
+  margin: 0.45rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.wellbeing-count {
+  margin: 0.3rem 0 0;
   color: var(--muted);
 }
 

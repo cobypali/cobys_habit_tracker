@@ -19,21 +19,30 @@ var FIELD_TO_COLUMN = {
   weight: "S"
 };
 
+var HABIT_DEFINITIONS = [
+  { key: "wakeUpAt8", label: "Wake up at 8" },
+  { key: "sleep75Hours", label: "Get 7.5 hours of sleep" },
+  { key: "meditate", label: "Meditate" },
+  { key: "workout", label: "Workout" },
+  { key: "workOnStudio", label: "Work on your business" },
+  { key: "consumeDrugs", label: "Avoid marijuana consumption" },
+  { key: "socialLimits", label: "Adhere to social media limits" },
+  { key: "stretch", label: "Stretch" },
+  { key: "hairCare", label: "Hair care protocol" },
+  { key: "gratitudePrayer", label: "Gratitude journal, vision board, or pray" }
+];
+
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
     var p = e.parameter || {};
-    var todayKey = getTodayKeyPST();
     var requestDateKey = normalizeRequestDateKey(p.clientDateKey);
 
     if (!requestDateKey) {
       throw new Error("Missing clientDateKey");
     }
-    if (requestDateKey !== todayKey) {
-      throw new Error("Date mismatch. Expected " + todayKey + " but received " + requestDateKey);
-    }
 
-    var targetRow = findOrCreateTodayRow(sheet, todayKey);
+    var targetRow = findOrCreateTodayRow(sheet, requestDateKey);
     var updates = buildUpdates(p, targetRow);
 
     for (var i = 0; i < updates.length; i++) {
@@ -55,6 +64,12 @@ function doGet(e) {
       var requestDateKey = normalizeRequestDateKey(p.clientDateKey) || getTodayKeyPST();
       var result = getValuesForDate(sheet, requestDateKey);
       return respond(result, p.callback);
+    }
+    if (String(p.action || "") === "getInsights") {
+      var insightsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+      var insights = getHabitInsights(insightsSheet);
+      var averageWellbeing = getAverageWellbeing(insightsSheet);
+      return respond({ ok: true, habits: insights, averageWellbeing: averageWellbeing }, p.callback);
     }
 
     return respond({ ok: true, status: "alive" }, p.callback);
@@ -114,6 +129,92 @@ function getValuesForDate(sheet, dateKey) {
   }
 
   return { ok: true, exists: true, dateKey: dateKey, row: row, values: values };
+}
+
+function getHabitInsights(sheet) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 1) {
+    return HABIT_DEFINITIONS.map(function (habit) {
+      return {
+        key: habit.key,
+        label: habit.label,
+        completionPercent: 0,
+        completionDisplay: "0%",
+        currentStreak: 0
+      };
+    });
+  }
+
+  var lastColumn = columnToNumber("L");
+  var rows = sheet.getRange(1, 1, lastRow, lastColumn).getValues();
+  var datedRows = [];
+
+  for (var i = 0; i < rows.length; i++) {
+    if (normalizeDateCellToKey(rows[i][0])) {
+      datedRows.push(rows[i]);
+    }
+  }
+
+  return HABIT_DEFINITIONS.map(function (habit) {
+    var colNumber = columnToNumber(FIELD_TO_COLUMN[habit.key]);
+    var colIndex = colNumber - 1;
+    var totalDays = datedRows.length;
+    var doneDays = 0;
+    var streak = 0;
+
+    for (var r = 0; r < datedRows.length; r++) {
+      var value = normalizeBinary(datedRows[r][colIndex]);
+      if (value === 1) {
+        doneDays++;
+      }
+    }
+
+    for (var x = datedRows.length - 1; x >= 0; x--) {
+      var streakValue = normalizeBinary(datedRows[x][colIndex]);
+      if (streakValue === 1) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    var percent = totalDays > 0 ? Math.round((doneDays / totalDays) * 100) : 0;
+
+    return {
+      key: habit.key,
+      label: habit.label,
+      completionPercent: percent,
+      completionDisplay: String(percent) + "%",
+      currentStreak: streak
+    };
+  });
+}
+
+function getAverageWellbeing(sheet) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 1) {
+    return { value: 0, display: "0.0", count: 0 };
+  }
+
+  var wellBeingCol = columnToNumber(FIELD_TO_COLUMN.wellbeing);
+  var values = sheet.getRange(1, wellBeingCol, lastRow, 1).getValues();
+  var sum = 0;
+  var count = 0;
+
+  for (var i = 0; i < values.length; i++) {
+    var n = Number(values[i][0]);
+    if (isNaN(n)) continue;
+    if (n < 0 || n > 10) continue;
+    sum += n;
+    count++;
+  }
+
+  if (count === 0) {
+    return { value: 0, display: "0.0", count: 0 };
+  }
+
+  var avg = sum / count;
+  return { value: avg, display: avg.toFixed(1), count: count };
 }
 
 function buildUpdates(params, targetRow) {

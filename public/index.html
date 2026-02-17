@@ -20,6 +20,7 @@
         <h1>Coby's Habit Tracker</h1>
         <p>Inputs are sent to your Google Sheet.</p>
         <button id="enablePushBtn" type="button">Enable Push Notifications</button>
+        <a href="insights.html" class="action-link">See Insights</a>
         <p id="pushStatus" class="status-text"></p>
       </header>
 
@@ -29,29 +30,29 @@
           <label>1) Did you wake up at 8?</label>
           <div class="binary-input" data-field="wakeUpAt8">
             <input type="hidden" name="wakeUpAt8" value="" />
-            <button type="button" class="binary-btn" data-field="wakeUpAt8" data-value="1">1</button>
-            <button type="button" class="binary-btn" data-field="wakeUpAt8" data-value="0">0</button>
+            <button type="button" class="binary-btn" data-field="wakeUpAt8" data-value="1">Yes</button>
+            <button type="button" class="binary-btn" data-field="wakeUpAt8" data-value="0">No</button>
           </div>
 
           <label>2) Did you get 7.5 hours of sleep?</label>
           <div class="binary-input" data-field="sleep75Hours">
             <input type="hidden" name="sleep75Hours" value="" />
-            <button type="button" class="binary-btn" data-field="sleep75Hours" data-value="1">1</button>
-            <button type="button" class="binary-btn" data-field="sleep75Hours" data-value="0">0</button>
+            <button type="button" class="binary-btn" data-field="sleep75Hours" data-value="1">Yes</button>
+            <button type="button" class="binary-btn" data-field="sleep75Hours" data-value="0">No</button>
           </div>
 
           <label>3) Did you meditate?</label>
           <div class="binary-input" data-field="meditate">
             <input type="hidden" name="meditate" value="" />
-            <button type="button" class="binary-btn" data-field="meditate" data-value="1">1</button>
-            <button type="button" class="binary-btn" data-field="meditate" data-value="0">0</button>
+            <button type="button" class="binary-btn" data-field="meditate" data-value="1">Yes</button>
+            <button type="button" class="binary-btn" data-field="meditate" data-value="0">No</button>
           </div>
 
           <label>4) Did you workout?</label>
           <div class="binary-input" data-field="workout">
             <input type="hidden" name="workout" value="" />
-            <button type="button" class="binary-btn" data-field="workout" data-value="1">1</button>
-            <button type="button" class="binary-btn" data-field="workout" data-value="0">0</button>
+            <button type="button" class="binary-btn" data-field="workout" data-value="1">Yes</button>
+            <button type="button" class="binary-btn" data-field="workout" data-value="0">No</button>
           </div>
 
           <button id="updateMorningBtn" type="button" class="submit-btn">Update 8:00 AM Check-In</button>
@@ -63,43 +64,43 @@
           <label>5) Did you work on your business?</label>
           <div class="binary-input" data-field="workOnStudio">
             <input type="hidden" name="workOnStudio" value="" />
-            <button type="button" class="binary-btn" data-field="workOnStudio" data-value="1">1</button>
-            <button type="button" class="binary-btn" data-field="workOnStudio" data-value="0">0</button>
+            <button type="button" class="binary-btn" data-field="workOnStudio" data-value="1">Yes</button>
+            <button type="button" class="binary-btn" data-field="workOnStudio" data-value="0">No</button>
           </div>
 
           <label>6) Did you avoid marijuana consumption?</label>
           <div class="binary-input" data-field="consumeDrugs">
             <input type="hidden" name="consumeDrugs" value="" />
-            <button type="button" class="binary-btn" data-field="consumeDrugs" data-value="1">1</button>
-            <button type="button" class="binary-btn" data-field="consumeDrugs" data-value="0">0</button>
+            <button type="button" class="binary-btn" data-field="consumeDrugs" data-value="1">Yes</button>
+            <button type="button" class="binary-btn" data-field="consumeDrugs" data-value="0">No</button>
           </div>
 
           <label>7) Did you adhere to your social media limits?</label>
           <div class="binary-input" data-field="socialLimits">
             <input type="hidden" name="socialLimits" value="" />
-            <button type="button" class="binary-btn" data-field="socialLimits" data-value="1">1</button>
-            <button type="button" class="binary-btn" data-field="socialLimits" data-value="0">0</button>
+            <button type="button" class="binary-btn" data-field="socialLimits" data-value="1">Yes</button>
+            <button type="button" class="binary-btn" data-field="socialLimits" data-value="0">No</button>
           </div>
 
           <label>8) Did you stretch?</label>
           <div class="binary-input" data-field="stretch">
             <input type="hidden" name="stretch" value="" />
-            <button type="button" class="binary-btn" data-field="stretch" data-value="1">1</button>
-            <button type="button" class="binary-btn" data-field="stretch" data-value="0">0</button>
+            <button type="button" class="binary-btn" data-field="stretch" data-value="1">Yes</button>
+            <button type="button" class="binary-btn" data-field="stretch" data-value="0">No</button>
           </div>
 
           <label>9) Did you engage in the hair care protocol?</label>
           <div class="binary-input" data-field="hairCare">
             <input type="hidden" name="hairCare" value="" />
-            <button type="button" class="binary-btn" data-field="hairCare" data-value="1">1</button>
-            <button type="button" class="binary-btn" data-field="hairCare" data-value="0">0</button>
+            <button type="button" class="binary-btn" data-field="hairCare" data-value="1">Yes</button>
+            <button type="button" class="binary-btn" data-field="hairCare" data-value="0">No</button>
           </div>
 
           <label>10) Did you gratitude journal, vision board, or pray?</label>
           <div class="binary-input" data-field="gratitudePrayer">
             <input type="hidden" name="gratitudePrayer" value="" />
-            <button type="button" class="binary-btn" data-field="gratitudePrayer" data-value="1">1</button>
-            <button type="button" class="binary-btn" data-field="gratitudePrayer" data-value="0">0</button>
+            <button type="button" class="binary-btn" data-field="gratitudePrayer" data-value="1">Yes</button>
+            <button type="button" class="binary-btn" data-field="gratitudePrayer" data-value="0">No</button>
           </div>
 
           <button id="saveHabitsBtn" type="button" class="submit-btn">Save Habits 1-10 to Google Sheet</button>

@@ -142,7 +142,7 @@ function renderSummaries(overallScoreAverage, averageWellbeing) {
     "</p>" +
     "</div>" +
     '<div class="summary-block">' +
-    "<h3>Average Well-being (11)</h3>" +
+    "<h3>Average Well-being</h3>" +
     '<p class="wellbeing-value">' +
     escapeHtml(avgDisplay) +
     " / 10</p>" +

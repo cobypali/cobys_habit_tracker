@@ -47,6 +47,11 @@ function initOneSignal() {
       serviceWorkerParam: { scope: "./" },
       notifyButton: { enable: false }
     });
+
+    updatePushButtonState(OneSignal);
+    OneSignal.User.PushSubscription.addEventListener("change", () => {
+      updatePushButtonState(OneSignal);
+    });
   });
 }
 
@@ -56,14 +61,34 @@ pushButton.addEventListener("click", async () => {
       pushStatus.textContent = "OneSignal SDK not loaded yet. Try again.";
       return;
     }
-    await window.OneSignal.Notifications.requestPermission();
-    const isGranted = await window.OneSignal.Notifications.permission;
-    pushStatus.textContent = isGranted ? "Push enabled." : "Push permission denied.";
+
+    const pushSubscription = window.OneSignal.User.PushSubscription;
+    const currentlyOptedIn = Boolean(pushSubscription && pushSubscription.optedIn);
+
+    if (currentlyOptedIn) {
+      pushSubscription.optOut();
+      pushStatus.textContent = "Push disabled.";
+      updatePushButtonState(window.OneSignal);
+      return;
+    }
+
+    await pushSubscription.optIn();
+    const isOptedIn = Boolean(pushSubscription.optedIn);
+    pushStatus.textContent = isOptedIn ? "Push enabled." : "Push permission denied or blocked.";
+    updatePushButtonState(window.OneSignal);
   } catch (error) {
     console.error(error);
-    pushStatus.textContent = "Failed to enable push.";
+    pushStatus.textContent = "Failed to update push settings.";
   }
 });
+
+function updatePushButtonState(oneSignal) {
+  if (!pushButton || !oneSignal || !oneSignal.User || !oneSignal.User.PushSubscription) {
+    return;
+  }
+  const isOptedIn = Boolean(oneSignal.User.PushSubscription.optedIn);
+  pushButton.textContent = isOptedIn ? "Disable Push Notifications" : "Enable Push Notifications";
+}
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();

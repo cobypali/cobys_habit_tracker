@@ -22,7 +22,7 @@ const binaryFieldNames = [
   "gratitudePrayer"
 ];
 const coreHabitFieldNames = [...binaryFieldNames];
-const fullDayFieldNames = [...binaryFieldNames, "wellbeing", "notes", "activities", "weight"];
+const fullDayFieldNames = [...binaryFieldNames, "wellbeing", "notes", "activities", "stomachFeel", "weight"];
 const insightsCacheKey = "habitTrackerInsightsCache";
 const insightsCacheTtlMs = 5 * 60 * 1000;
 
@@ -344,7 +344,7 @@ function applySavedValues(values) {
     }
   }
 
-  for (const fieldName of ["wellbeing", "notes", "activities", "weight"]) {
+  for (const fieldName of ["wellbeing", "notes", "activities", "stomachFeel", "weight"]) {
     if (!Object.prototype.hasOwnProperty.call(values, fieldName)) {
       continue;
     }

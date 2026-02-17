@@ -16,7 +16,8 @@ var FIELD_TO_COLUMN = {
   wellbeing: "P",
   notes: "Q",
   activities: "R",
-  weight: "S"
+  stomachFeel: "S",
+  weight: "T"
 };
 
 var HABIT_DEFINITIONS = [
@@ -69,7 +70,12 @@ function doGet(e) {
       var insightsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
       var insightsResponse = getInsightsResponse(insightsSheet);
       return respond(
-        { ok: true, habits: insightsResponse.habits, averageWellbeing: insightsResponse.averageWellbeing },
+        {
+          ok: true,
+          habits: insightsResponse.habits,
+          overallScoreAverage: insightsResponse.overallScoreAverage,
+          averageWellbeing: insightsResponse.averageWellbeing
+        },
         p.callback
       );
     }
@@ -133,143 +139,27 @@ function getValuesForDate(sheet, dateKey) {
   return { ok: true, exists: true, dateKey: dateKey, row: row, values: values };
 }
 
-function getHabitInsights(sheet) {
-  var lastRow = sheet.getLastRow();
-  var percentRow = 370;
-  if (lastRow < 1) {
-    return HABIT_DEFINITIONS.map(function (habit) {
-      return {
-        key: habit.key,
-        label: habit.label,
-        completionPercent: 0,
-        completionDisplay: "0%",
-        currentStreak: 0
-      };
-    });
-  }
-
-  var lastColumn = columnToNumber("L");
-  var rows = sheet.getRange(1, 1, lastRow, lastColumn).getValues();
-  var datedRows = [];
-
-  for (var i = 0; i < rows.length; i++) {
-    if (normalizeDateCellToKey(rows[i][0])) {
-      datedRows.push(rows[i]);
-    }
-  }
-
-  return HABIT_DEFINITIONS.map(function (habit) {
-    var colNumber = columnToNumber(FIELD_TO_COLUMN[habit.key]);
-    var colIndex = colNumber - 1;
-    var completionFromRow = formatCompletionFromRowValue(sheet.getRange(percentRow, colNumber).getValue());
-    var streak = 0;
-
-    for (var x = datedRows.length - 1; x >= 0; x--) {
-      var streakValue = normalizeBinary(datedRows[x][colIndex]);
-      if (streakValue === 1) {
-        streak++;
-      } else {
-        break;
-      }
-    }
-
-    return {
-      key: habit.key,
-      label: habit.label,
-      completionPercent: completionFromRow.percent,
-      completionDisplay: completionFromRow.display,
-      currentStreak: streak
-    };
-  });
-}
-
 function getInsightsResponse(sheet) {
-  var lastRow = sheet.getLastRow();
   var percentRow = 370;
-  if (lastRow < 1) {
-    return {
-      habits: HABIT_DEFINITIONS.map(function (habit) {
-        return {
-          key: habit.key,
-          label: habit.label,
-          completionPercent: 0,
-          completionDisplay: "0%",
-          currentStreak: 0
-        };
-      }),
-      averageWellbeing: { value: 0, display: "0.0", count: 0 }
-    };
-  }
-
-  var lastColumn = columnToNumber("P");
-  var rows = sheet.getRange(1, 1, lastRow, lastColumn).getValues();
-  var habitColIndexes = HABIT_DEFINITIONS.map(function (habit) {
-    return columnToNumber(FIELD_TO_COLUMN[habit.key]) - 1;
-  });
-  var wellbeingColIndex = columnToNumber(FIELD_TO_COLUMN.wellbeing) - 1;
-  var completionByHabit = {};
-  var streaks = {};
-  var streakOpen = {};
-  var sumWellbeing = 0;
-  var countWellbeing = 0;
-
-  for (var h = 0; h < HABIT_DEFINITIONS.length; h++) {
-    var habitKey = HABIT_DEFINITIONS[h].key;
-    var habitColNumber = columnToNumber(FIELD_TO_COLUMN[habitKey]);
-    completionByHabit[habitKey] = formatCompletionFromRowValue(sheet.getRange(percentRow, habitColNumber).getValue());
-    streaks[habitKey] = 0;
-    streakOpen[habitKey] = true;
-  }
-
-  for (var i = rows.length - 1; i >= 0; i--) {
-    var row = rows[i];
-    if (!normalizeDateCellToKey(row[0])) {
-      continue;
-    }
-
-    var wellbeing = Number(row[wellbeingColIndex]);
-    if (!isNaN(wellbeing) && wellbeing >= 0 && wellbeing <= 10) {
-      sumWellbeing += wellbeing;
-      countWellbeing++;
-    }
-
-    for (var j = 0; j < HABIT_DEFINITIONS.length; j++) {
-      var habit = HABIT_DEFINITIONS[j];
-      if (!streakOpen[habit.key]) {
-        continue;
-      }
-
-      var streakValue = normalizeBinary(row[habitColIndexes[j]]);
-      if (streakValue === 1) {
-        streaks[habit.key]++;
-      } else {
-        streakOpen[habit.key] = false;
-      }
-    }
-  }
-
   var habits = HABIT_DEFINITIONS.map(function (habit) {
-    var completion = completionByHabit[habit.key] || { percent: 0, display: "0%" };
+    var habitColNumber = columnToNumber(FIELD_TO_COLUMN[habit.key]);
+    var completion = formatCompletionFromRowValue(sheet.getRange(percentRow, habitColNumber).getValue());
     return {
       key: habit.key,
       label: habit.label,
       completionPercent: completion.percent,
-      completionDisplay: completion.display,
-      currentStreak: streaks[habit.key] || 0
+      completionDisplay: completion.display
     };
   });
 
-  if (countWellbeing === 0) {
-    return {
-      habits: habits,
-      averageWellbeing: { value: 0, display: "0.0", count: 0 }
-    };
-  }
-
-  var avgWellbeing = sumWellbeing / countWellbeing;
+  var overallScoreCol = columnToNumber("N");
+  var wellbeingCol = columnToNumber("P");
+  var overallScoreAverage = formatCompletionFromRowValue(sheet.getRange(percentRow, overallScoreCol).getValue());
+  var averageWellbeing = formatWellbeingFromRowValue(sheet.getRange(percentRow, wellbeingCol).getValue());
   return {
     habits: habits,
-    averageWellbeing: { value: avgWellbeing, display: avgWellbeing.toFixed(1), count: countWellbeing }
+    overallScoreAverage: overallScoreAverage,
+    averageWellbeing: averageWellbeing
   };
 }
 
@@ -293,31 +183,13 @@ function formatCompletionFromRowValue(value) {
   return { percent: rounded, display: rounded + "%" };
 }
 
-function getAverageWellbeing(sheet) {
-  var lastRow = sheet.getLastRow();
-  if (lastRow < 1) {
-    return { value: 0, display: "0.0", count: 0 };
-  }
+function formatWellbeingFromRowValue(value) {
+  var text = String(value || "").trim();
+  if (!text) return { value: 0, display: "0.0" };
 
-  var wellBeingCol = columnToNumber(FIELD_TO_COLUMN.wellbeing);
-  var values = sheet.getRange(1, wellBeingCol, lastRow, 1).getValues();
-  var sum = 0;
-  var count = 0;
-
-  for (var i = 0; i < values.length; i++) {
-    var n = Number(values[i][0]);
-    if (isNaN(n)) continue;
-    if (n < 0 || n > 10) continue;
-    sum += n;
-    count++;
-  }
-
-  if (count === 0) {
-    return { value: 0, display: "0.0", count: 0 };
-  }
-
-  var avg = sum / count;
-  return { value: avg, display: avg.toFixed(1), count: count };
+  var n = Number(text);
+  if (isNaN(n)) return { value: 0, display: "0.0" };
+  return { value: n, display: n.toFixed(1) };
 }
 
 function buildUpdates(params, targetRow) {
@@ -343,6 +215,7 @@ function buildUpdates(params, targetRow) {
 function normalizeByField(fieldName, value) {
   if (fieldName === "wellbeing") return normalizeWellbeing(value);
   if (fieldName === "activities") return String(value || "").trim();
+  if (fieldName === "stomachFeel") return String(value || "").trim();
   if (fieldName === "weight") return String(value || "").trim();
   if (fieldName === "notes") return String(value || "").trim();
   if (fieldName === "timestamp") return String(value || "").trim();
@@ -354,7 +227,7 @@ function normalizeCellForField(fieldName, value) {
     var wellbeing = normalizeWellbeing(value);
     return wellbeing === "" ? "" : String(wellbeing);
   }
-  if (fieldName === "notes" || fieldName === "activities" || fieldName === "weight") {
+  if (fieldName === "notes" || fieldName === "activities" || fieldName === "stomachFeel" || fieldName === "weight") {
     return String(value || "").trim();
   }
   return normalizeBinary(value) === "" ? "" : String(normalizeBinary(value));

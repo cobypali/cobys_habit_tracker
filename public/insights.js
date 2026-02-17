@@ -23,7 +23,7 @@ async function loadInsights() {
 
   const cached = readInsightsCache();
   if (cached && cached.payload && Array.isArray(cached.payload.habits)) {
-    renderInsights(cached.payload.habits, cached.payload.averageWellbeing);
+    renderInsights(cached.payload.habits, cached.payload.overallScoreAverage, cached.payload.averageWellbeing);
     insightsStatus.textContent = "";
 
     if (Date.now() - cached.cachedAt < insightsCacheTtlMs) {
@@ -48,7 +48,7 @@ async function loadInsights() {
       })
     );
 
-    renderInsights(payload.habits, payload.averageWellbeing);
+    renderInsights(payload.habits, payload.overallScoreAverage, payload.averageWellbeing);
     insightsStatus.textContent = "";
   } catch (error) {
     console.error(error);
@@ -100,7 +100,7 @@ function fetchInsightsJsonp() {
   });
 }
 
-function renderInsights(habits, averageWellbeing) {
+function renderInsights(habits, overallScoreAverage, averageWellbeing) {
   insightsGrid.innerHTML = "";
 
   habits.forEach((habit) => {
@@ -117,36 +117,36 @@ function renderInsights(habits, averageWellbeing) {
       escapeHtml(String(habit.completionDisplay || "0%")) +
       "</p>" +
       "</div>" +
-      '<div class="metric-box">' +
-      '<p class="metric-label">Current Streak</p>' +
-      '<p class="metric-value">' +
-      escapeHtml(String(habit.currentStreak || 0)) +
-      "</p>" +
-      "</div>" +
       "</div>";
     insightsGrid.appendChild(card);
   });
 
-  renderWellbeingSummary(averageWellbeing);
+  renderSummaries(overallScoreAverage, averageWellbeing);
 }
 
-function renderWellbeingSummary(averageWellbeing) {
+function renderSummaries(overallScoreAverage, averageWellbeing) {
   if (!wellbeingSummary) {
     return;
   }
 
+  const overallDisplay =
+    overallScoreAverage && typeof overallScoreAverage.display === "string" ? overallScoreAverage.display : "0%";
   const avgDisplay =
     averageWellbeing && typeof averageWellbeing.display === "string" ? averageWellbeing.display : "0.0";
-  const count = averageWellbeing && typeof averageWellbeing.count === "number" ? averageWellbeing.count : 0;
 
   wellbeingSummary.innerHTML =
+    '<div class="summary-block">' +
+    "<h3>Overall Score Average</h3>" +
+    '<p class="wellbeing-value">' +
+    escapeHtml(overallDisplay) +
+    "</p>" +
+    "</div>" +
+    '<div class="summary-block">' +
     "<h3>Average Well-being (11)</h3>" +
     '<p class="wellbeing-value">' +
     escapeHtml(avgDisplay) +
     " / 10</p>" +
-    '<p class="wellbeing-count">Based on ' +
-    escapeHtml(String(count)) +
-    " day(s).</p>";
+    "</div>";
 }
 
 function readInsightsCache() {

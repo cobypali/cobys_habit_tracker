@@ -226,7 +226,7 @@ button:hover {
 
 .insight-metrics {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 0.6rem;
 }
 
@@ -258,6 +258,10 @@ button:hover {
   background: rgba(11, 18, 32, 0.8);
 }
 
+.summary-block + .summary-block {
+  margin-top: 0.8rem;
+}
+
 .wellbeing-summary h3 {
   margin: 0;
   font-size: 1rem;
@@ -269,11 +273,6 @@ button:hover {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--text);
-}
-
-.wellbeing-count {
-  margin: 0.3rem 0 0;
-  color: var(--muted);
 }
 
 @media (max-width: 640px) {

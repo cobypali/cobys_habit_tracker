@@ -107,7 +107,7 @@
           <button id="saveHabitsBtn" type="button" class="submit-btn">Save Habits 1-10 to Google Sheet</button>
           <p id="habitsStatus" class="status-text"></p>
 
-          <h3>Optional Entries (11-14)</h3>
+          <h3>Optional Entries (11-15)</h3>
           <label>11) Well-being out of 10</label>
           <input name="wellbeing" type="number" min="0" max="10" step="1" />
 
@@ -117,7 +117,10 @@
           <label>13) Activities</label>
           <textarea name="activities" rows="3" placeholder="What activities did you do?"></textarea>
 
-          <label>14) Weight</label>
+          <label>14) How did your stomach feel today?</label>
+          <input name="stomachFeel" type="text" placeholder="Describe your stomach today" />
+
+          <label>15) Weight</label>
           <input name="weight" type="text" placeholder="Enter weight" />
         </section>
 
@@ -128,6 +131,6 @@
 
     <script src="config.js?v=20260217-2"></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script src="app.js?v=20260217-4"></script>
+    <script src="app.js?v=20260217-5"></script>
   </body>
 </html>

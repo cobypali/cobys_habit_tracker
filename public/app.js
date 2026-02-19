@@ -30,21 +30,101 @@ let autoSaveTimerId = 0;
 let isAutoSavingHabits = false;
 let pendingAutoSaveHabits = false;
 let suppressAutoSave = false;
+let oneSignalInitPromise = null;
+let oneSignalSdkLoadPromise = null;
 
 init();
 
 function init() {
-  initOneSignal();
   initBinaryInputs();
-  loadTodayValues();
-  prefetchInsightsInBackground();
+  scheduleNonCriticalStartupWork();
+  scheduleOneSignalInit();
 }
 
-function initOneSignal() {
-  if (!oneSignalAppId || oneSignalAppId.includes("PASTE_")) {
-    pushStatus.textContent = "Set oneSignalAppId in public/config.js";
+function scheduleNonCriticalStartupWork() {
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(() => {
+      loadTodayValues();
+      prefetchInsightsInBackground();
+    }, { timeout: 2500 });
     return;
   }
+
+  window.setTimeout(() => {
+    loadTodayValues();
+    prefetchInsightsInBackground();
+  }, 800);
+}
+
+function scheduleOneSignalInit() {
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(() => {
+      ensureOneSignalReady().catch((error) => {
+        console.error("OneSignal idle init failed:", error);
+      });
+    }, { timeout: 2500 });
+    return;
+  }
+
+  window.setTimeout(() => {
+    ensureOneSignalReady().catch((error) => {
+      console.error("OneSignal delayed init failed:", error);
+    });
+  }, 1500);
+}
+
+async function ensureOneSignalReady() {
+  if (window.OneSignal && window.OneSignal.User && window.OneSignal.User.PushSubscription) {
+    updatePushButtonState(window.OneSignal);
+    return window.OneSignal;
+  }
+
+  if (oneSignalInitPromise) {
+    return oneSignalInitPromise;
+  }
+
+  oneSignalInitPromise = initOneSignal();
+  return oneSignalInitPromise;
+}
+
+function loadOneSignalSdk() {
+  if (window.OneSignal) {
+    return Promise.resolve();
+  }
+
+  if (oneSignalSdkLoadPromise) {
+    return oneSignalSdkLoadPromise;
+  }
+
+  oneSignalSdkLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load OneSignal SDK."));
+    document.head.appendChild(script);
+  });
+
+  return oneSignalSdkLoadPromise;
+}
+
+async function initOneSignal() {
+  if (!oneSignalAppId || oneSignalAppId.includes("PASTE_")) {
+    pushStatus.textContent = "Set oneSignalAppId in public/config.js";
+    return null;
+  }
+
+  await loadOneSignalSdk();
+
+  if (window.OneSignal && window.OneSignal.User && window.OneSignal.User.PushSubscription) {
+    updatePushButtonState(window.OneSignal);
+    return window.OneSignal;
+  }
+
+  let resolveReady;
+  const readyPromise = new Promise((resolve) => {
+    resolveReady = resolve;
+  });
 
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   window.OneSignalDeferred.push(async function (OneSignal) {
@@ -61,31 +141,36 @@ function initOneSignal() {
     OneSignal.User.PushSubscription.addEventListener("change", () => {
       updatePushButtonState(OneSignal);
     });
+
+    resolveReady(OneSignal);
   });
+
+  return readyPromise;
 }
 
 if (pushButton) {
   pushButton.addEventListener("click", async () => {
     try {
-      if (!window.OneSignal) {
-        pushStatus.textContent = "OneSignal SDK not loaded yet. Try again.";
+      const oneSignal = await ensureOneSignalReady();
+      if (!oneSignal || !oneSignal.User || !oneSignal.User.PushSubscription) {
+        pushStatus.textContent = "Push setup unavailable right now. Try again.";
         return;
       }
 
-      const pushSubscription = window.OneSignal.User.PushSubscription;
+      const pushSubscription = oneSignal.User.PushSubscription;
       const currentlyOptedIn = Boolean(pushSubscription && pushSubscription.optedIn);
 
       if (currentlyOptedIn) {
         pushSubscription.optOut();
         pushStatus.textContent = "Push disabled.";
-        updatePushButtonState(window.OneSignal);
+        updatePushButtonState(oneSignal);
         return;
       }
 
       await pushSubscription.optIn();
       const isOptedIn = Boolean(pushSubscription.optedIn);
       pushStatus.textContent = isOptedIn ? "Push enabled." : "Push permission denied or blocked.";
-      updatePushButtonState(window.OneSignal);
+      updatePushButtonState(oneSignal);
     } catch (error) {
       console.error(error);
       pushStatus.textContent = "Failed to update push settings.";

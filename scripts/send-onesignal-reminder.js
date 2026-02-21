@@ -6,7 +6,7 @@ const FORCE_SEND =
   String(process.env.GITHUB_EVENT_NAME || "").toLowerCase() === "workflow_dispatch";
 
 const APP_ID = String(process.env.ONESIGNAL_APP_ID || "").trim();
-const REST_API_KEY = String(process.env.ONESIGNAL_REST_API_KEY || "").trim();
+const REST_API_KEY = normalizeApiKey(process.env.ONESIGNAL_REST_API_KEY || "");
 
 const REMINDERS = [
   {
@@ -72,7 +72,7 @@ async function sendPayload(payload, label, isoLocal) {
   const response = await fetch(ONE_SIGNAL_API_URL, {
     method: "POST",
     headers: {
-      Authorization: "Basic " + REST_API_KEY,
+      Authorization: "Key " + REST_API_KEY,
       "Content-Type": "application/json"
     },
     body: JSON.stringify(payload)
@@ -85,6 +85,11 @@ async function sendPayload(payload, label, isoLocal) {
 
   console.log("Reminder sent:", label, isoLocal);
   console.log(raw);
+}
+
+function normalizeApiKey(raw) {
+  const value = String(raw || "").trim();
+  return value.replace(/^key\s+/i, "").replace(/^basic\s+/i, "").trim();
 }
 
 function getNowInTimeZone(timeZone) {

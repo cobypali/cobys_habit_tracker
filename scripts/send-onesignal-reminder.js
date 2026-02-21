@@ -1,6 +1,8 @@
 const ONE_SIGNAL_API_URL = "https://api.onesignal.com/notifications";
 const TIMEZONE = process.env.TIMEZONE || "America/Los_Angeles";
-const FORCE_SEND = String(process.env.FORCE_SEND || "").toLowerCase() === "true";
+const FORCE_SEND =
+  String(process.env.FORCE_SEND || "").toLowerCase() === "true" ||
+  String(process.env.GITHUB_EVENT_NAME || "").toLowerCase() === "workflow_dispatch";
 
 const APP_ID = process.env.ONESIGNAL_APP_ID || "";
 const REST_API_KEY = process.env.ONESIGNAL_REST_API_KEY || "";

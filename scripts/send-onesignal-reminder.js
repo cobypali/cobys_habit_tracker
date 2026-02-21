@@ -5,8 +5,8 @@ const FORCE_SEND =
   String(process.env.FORCE_SEND || "").toLowerCase() === "true" ||
   String(process.env.GITHUB_EVENT_NAME || "").toLowerCase() === "workflow_dispatch";
 
-const APP_ID = process.env.ONESIGNAL_APP_ID || "";
-const REST_API_KEY = process.env.ONESIGNAL_REST_API_KEY || "";
+const APP_ID = String(process.env.ONESIGNAL_APP_ID || "").trim();
+const REST_API_KEY = String(process.env.ONESIGNAL_REST_API_KEY || "").trim();
 
 const REMINDERS = [
   {
@@ -72,7 +72,7 @@ async function sendPayload(payload, label, isoLocal) {
   const response = await fetch(ONE_SIGNAL_API_URL, {
     method: "POST",
     headers: {
-      Authorization: "Key " + REST_API_KEY,
+      Authorization: "Basic " + REST_API_KEY,
       "Content-Type": "application/json"
     },
     body: JSON.stringify(payload)

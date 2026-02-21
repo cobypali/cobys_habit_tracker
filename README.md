@@ -37,7 +37,7 @@ Security and privacy note:
 5. Copy App ID into `public/config.js`.
 6. In OneSignal dashboard, create two scheduled messages:
    - 8:00 AM local time: "Open app and complete questions 1-4"
-   - 9:30 AM local time: "Open app and complete questions 5-12"
+   - 9:30 PM local time: "Open app and complete questions 5-12"
 
 ## 4) Deploy (free) with Cloudflare Pages
 

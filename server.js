@@ -98,10 +98,10 @@ function scheduleDailyPushes() {
   );
 
   cron.schedule(
-    "30 9 * * *",
+    "30 21 * * *",
     async () => {
       await sendPushToAll({
-        title: "9:30 AM Habit Check-In",
+        title: "9:30 PM Habit Check-In",
         body: "Daily work, boundaries, wellbeing, and notes.",
         section: "daily"
       });

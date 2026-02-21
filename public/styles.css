@@ -229,11 +229,6 @@ button:hover {
   margin-top: 0.7rem;
 }
 
-#pushStatus {
-  min-height: 0;
-  margin-top: 0.35rem;
-}
-
 #insightsStatus {
   min-height: 0;
   margin-top: 0.35rem;

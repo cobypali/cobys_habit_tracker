@@ -1,45 +1,13 @@
 const express = require("express");
 const path = require("path");
-const fs = require("fs");
-const cron = require("node-cron");
-const webpush = require("web-push");
 const { google } = require("googleapis");
 require("dotenv").config();
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
-const timezone = process.env.TIMEZONE || "America/Los_Angeles";
-const subscriptionsPath = path.join(__dirname, "data", "subscriptions.json");
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(path.join(__dirname, "public")));
-
-ensureDataFile();
-configureWebPush();
-scheduleDailyPushes();
-
-app.get("/api/config", (req, res) => {
-  res.json({
-    vapidPublicKey: process.env.VAPID_PUBLIC_KEY || "",
-    timezone
-  });
-});
-
-app.post("/api/subscribe", (req, res) => {
-  const subscription = req.body;
-  if (!subscription || !subscription.endpoint) {
-    return res.status(400).json({ error: "Invalid push subscription payload." });
-  }
-
-  const subscriptions = readSubscriptions();
-  const exists = subscriptions.some((entry) => entry.endpoint === subscription.endpoint);
-  if (!exists) {
-    subscriptions.push(subscription);
-    writeSubscriptions(subscriptions);
-  }
-
-  return res.json({ ok: true });
-});
 
 app.post("/api/log-day", async (req, res) => {
   try {
@@ -60,99 +28,6 @@ app.get("*", (req, res) => {
 app.listen(port, () => {
   console.log(`Habit tracker running on http://localhost:${port}`);
 });
-
-function ensureDataFile() {
-  const dir = path.dirname(subscriptionsPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  if (!fs.existsSync(subscriptionsPath)) {
-    fs.writeFileSync(subscriptionsPath, "[]", "utf8");
-  }
-}
-
-function configureWebPush() {
-  const publicKey = process.env.VAPID_PUBLIC_KEY;
-  const privateKey = process.env.VAPID_PRIVATE_KEY;
-  const subject = process.env.VAPID_SUBJECT;
-
-  if (!publicKey || !privateKey || !subject) {
-    console.warn("VAPID env vars missing. Push sending is disabled until configured.");
-    return;
-  }
-
-  webpush.setVapidDetails(subject, publicKey, privateKey);
-}
-
-function scheduleDailyPushes() {
-  cron.schedule(
-    "0 8 * * *",
-    async () => {
-      await sendPushToAll({
-        title: "8:00 AM Habit Check-In",
-        body: "Wake up, sleep, meditate, workout.",
-        section: "morning"
-      });
-    },
-    { timezone }
-  );
-
-  cron.schedule(
-    "30 21 * * *",
-    async () => {
-      await sendPushToAll({
-        title: "9:30 PM Habit Check-In",
-        body: "Daily work, boundaries, wellbeing, and notes.",
-        section: "daily"
-      });
-    },
-    { timezone }
-  );
-}
-
-async function sendPushToAll(payload) {
-  if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY || !process.env.VAPID_SUBJECT) {
-    return;
-  }
-
-  const subscriptions = readSubscriptions();
-  if (!subscriptions.length) {
-    return;
-  }
-
-  const deadEndpoints = [];
-  const message = JSON.stringify(payload);
-
-  for (const subscription of subscriptions) {
-    try {
-      await webpush.sendNotification(subscription, message);
-    } catch (error) {
-      if (error && error.statusCode === 410) {
-        deadEndpoints.push(subscription.endpoint);
-      }
-      console.error("Push send failed:", error.message);
-    }
-  }
-
-  if (deadEndpoints.length) {
-    const live = subscriptions.filter((entry) => !deadEndpoints.includes(entry.endpoint));
-    writeSubscriptions(live);
-  }
-}
-
-function readSubscriptions() {
-  try {
-    const raw = fs.readFileSync(subscriptionsPath, "utf8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeSubscriptions(value) {
-  fs.writeFileSync(subscriptionsPath, JSON.stringify(value, null, 2), "utf8");
-}
 
 function buildRow(payload) {
   const toBinary = (value) => {

@@ -3,7 +3,6 @@
 This version is fully free:
 - Static frontend host: Cloudflare Pages (connected to GitHub)
 - Sheet writes: Google Apps Script Web App
-- Push notifications: OneSignal free plan
 
 ## 1) Configure Google Apps Script
 
@@ -26,31 +25,8 @@ Security and privacy note:
 
 1. Edit `public/config.js`:
    - `appsScriptUrl` = your Apps Script `exec` URL
-   - `oneSignalAppId` = your OneSignal App ID
 
-## 3) Configure OneSignal
-
-1. Create free account at https://onesignal.com
-2. Create a Web Push app.
-3. Set your site URL to your deployed app URL.
-4. Leave service worker paths blank in dashboard. The app sets them in `public/app.js`.
-5. Copy App ID into `public/config.js`.
-6. Create a OneSignal REST API key (Dashboard -> Settings -> Keys & IDs).
-
-## 3b) Daily recurring push automation (8:00 AM and 9:30 PM)
-
-OneSignal's regular dashboard scheduler is not reliable for exact daily recurring sends on all plans.
-This repo includes a GitHub Action that runs every 30 minutes and sends only at:
-- 8:00 AM `America/Los_Angeles`
-- 9:30 PM `America/Los_Angeles`
-
-Setup:
-1. In GitHub, open `Settings -> Secrets and variables -> Actions`.
-2. Add repository secret `ONESIGNAL_APP_ID` (your OneSignal app ID).
-3. Add repository secret `ONESIGNAL_REST_API_KEY` (your OneSignal REST API key).
-4. Push to `main` (or run the workflow manually once from Actions).
-
-## 4) Deploy (free) with Cloudflare Pages
+## 3) Deploy (free) with Cloudflare Pages
 
 1. Push this repo to GitHub.
 2. In Cloudflare Pages:
@@ -61,15 +37,12 @@ Setup:
    - Build output directory: `public`
 3. Deploy and copy the site URL.
 
-## 5) iOS usage
+## 4) iOS usage
 
 1. Open your deployed URL in Safari.
 2. Share -> `Add to Home Screen`.
 3. Launch from Home Screen.
-4. Tap `Enable Push Notifications`.
 
 ## Notes
 
 - `public/app.js` posts your form directly to Apps Script.
-- Local in-browser reminders also run when the app is open.
-- OneSignal handles reliable scheduled push even when your page is closed.

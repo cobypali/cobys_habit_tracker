@@ -226,7 +226,8 @@ function normalizeByField(fieldName, value) {
 
 function normalizeCellForField(fieldName, value) {
   if (fieldName === "dayScore") {
-    return String(value || "").trim();
+    if (value === null || value === undefined) return "";
+    return String(value).trim();
   }
   if (fieldName === "wellbeing") {
     var wellbeing = normalizeWellbeing(value);

@@ -253,7 +253,7 @@ function updateDayScoreDisplay(scoreValue) {
     return;
   }
 
-  const normalized = String(scoreValue || "").trim();
+  const normalized = scoreValue === null || typeof scoreValue === "undefined" ? "" : String(scoreValue).trim();
   dayScoreText.textContent = normalized ? "Score of the day: " + normalized : "Score of the day: --";
 }
 

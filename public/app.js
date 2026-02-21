@@ -5,6 +5,9 @@ const saveStatus = document.getElementById("saveStatus");
 const form = document.getElementById("habitForm");
 const saveHabitsButton = document.getElementById("saveHabitsBtn");
 const seeInsightsButton = document.getElementById("seeInsightsBtn");
+const prevDateButton = document.getElementById("prevDateBtn");
+const nextDateButton = document.getElementById("nextDateBtn");
+const currentDateLabel = document.getElementById("currentDateLabel");
 
 const appConfig = window.APP_CONFIG || {};
 const appsScriptUrl = appConfig.appsScriptUrl || "";
@@ -32,11 +35,15 @@ let pendingAutoSaveHabits = false;
 let suppressAutoSave = false;
 let oneSignalInitPromise = null;
 let oneSignalSdkLoadPromise = null;
+let selectedDate = getStartOfTodayLocal();
+let activeDateLoadRequestId = 0;
 
 init();
 
 function init() {
   initBinaryInputs();
+  initDateNavigation();
+  updateCurrentDateLabel();
   scheduleNonCriticalStartupWork();
   scheduleOneSignalInit();
 }
@@ -44,14 +51,14 @@ function init() {
 function scheduleNonCriticalStartupWork() {
   if (typeof window.requestIdleCallback === "function") {
     window.requestIdleCallback(() => {
-      loadTodayValues();
+      loadSelectedDateValues();
       prefetchInsightsInBackground();
     }, { timeout: 2500 });
     return;
   }
 
   window.setTimeout(() => {
-    loadTodayValues();
+    loadSelectedDateValues();
     prefetchInsightsInBackground();
   }, 800);
 }
@@ -212,6 +219,34 @@ function updatePushButtonState(oneSignal) {
   pushButton.textContent = isOptedIn ? "Disable Push Notifications" : "Enable Push Notifications";
 }
 
+function initDateNavigation() {
+  if (prevDateButton) {
+    prevDateButton.addEventListener("click", () => {
+      shiftSelectedDate(-1);
+    });
+  }
+
+  if (nextDateButton) {
+    nextDateButton.addEventListener("click", () => {
+      shiftSelectedDate(1);
+    });
+  }
+}
+
+function shiftSelectedDate(days) {
+  selectedDate = addDays(selectedDate, days);
+  updateCurrentDateLabel();
+  loadSelectedDateValues();
+}
+
+function updateCurrentDateLabel() {
+  if (!currentDateLabel) {
+    return;
+  }
+
+  currentDateLabel.textContent = formatDisplayDate(selectedDate);
+}
+
 function initBinaryInputs() {
   if (!form) {
     return;
@@ -331,7 +366,7 @@ async function sendPayload(payload, statusElement, successMessage, savingMessage
 
   const payloadWithDate = {
     ...payload,
-    clientDateKey: getTodayKeyLocal()
+    clientDateKey: getDateKeyLocal(selectedDate)
   };
   const body = new URLSearchParams(payloadWithDate);
 
@@ -351,13 +386,21 @@ async function sendPayload(payload, statusElement, successMessage, savingMessage
   }
 }
 
-async function loadTodayValues() {
+async function loadSelectedDateValues() {
   if (!appsScriptUrl || appsScriptUrl.includes("PASTE_")) {
     return;
   }
 
+  const requestId = ++activeDateLoadRequestId;
+
   try {
-    const payload = await fetchTodayValuesJsonp();
+    const payload = await fetchValuesForDateJsonp(selectedDate);
+    if (requestId !== activeDateLoadRequestId) {
+      return;
+    }
+
+    clearFormValues();
+
     if (!payload || payload.ok !== true || payload.exists !== true || !payload.values) {
       return;
     }
@@ -368,12 +411,12 @@ async function loadTodayValues() {
   }
 }
 
-function fetchTodayValuesJsonp() {
+function fetchValuesForDateJsonp(date) {
   return new Promise((resolve, reject) => {
     const callbackName = "__habitTrackerPrefill_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
     const query = new URLSearchParams({
       action: "getToday",
-      clientDateKey: getTodayKeyLocal(),
+      clientDateKey: getDateKeyLocal(date),
       callback: callbackName
     });
     const separator = appsScriptUrl.includes("?") ? "&" : "?";
@@ -443,12 +486,60 @@ function applySavedValues(values) {
   suppressAutoSave = false;
 }
 
-function getTodayKeyLocal() {
+function clearFormValues() {
+  if (!form) {
+    return;
+  }
+
+  suppressAutoSave = true;
+
+  for (const fieldName of binaryFieldNames) {
+    const hiddenInput = form.querySelector(`input[type="hidden"][name="${fieldName}"]`);
+    if (hiddenInput) {
+      hiddenInput.value = "";
+    }
+
+    const relatedButtons = form.querySelectorAll(`.binary-btn[data-field="${fieldName}"]`);
+    relatedButtons.forEach((button) => {
+      button.classList.remove("is-selected");
+      button.setAttribute("aria-pressed", "false");
+    });
+  }
+
+  for (const fieldName of ["wellbeing", "notes", "activities", "stomachFeel", "weight"]) {
+    const field = form.elements.namedItem(fieldName);
+    if (field) {
+      field.value = "";
+    }
+  }
+
+  suppressAutoSave = false;
+}
+
+function getDateKeyLocal(date) {
   const formatter = new Intl.DateTimeFormat("en-US", {
     month: "numeric",
     day: "numeric"
   });
-  return formatter.format(new Date());
+  return formatter.format(date);
+}
+
+function getStartOfTodayLocal() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function addDays(date, days) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+}
+
+function formatDisplayDate(date) {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  }).format(date);
 }
 
 function prefetchInsightsInBackground() {

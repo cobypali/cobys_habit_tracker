@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#0B1220" />
     <title>Coby's Habit Tracker</title>
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css?v=20260219-1" />
+    <link rel="stylesheet" href="styles.css?v=20260221-1" />
   </head>
   <body>
     <main class="app-shell">
@@ -28,6 +28,11 @@
 
       <form id="habitForm">
         <section id="daily" class="panel">
+          <div class="date-nav" aria-label="Habit date navigation">
+            <button id="prevDateBtn" type="button" class="date-nav-btn" aria-label="Previous day">&#8592;</button>
+            <p id="currentDateLabel" class="current-date-label" aria-live="polite"></p>
+            <button id="nextDateBtn" type="button" class="date-nav-btn" aria-label="Next day">&#8594;</button>
+          </div>
           <h2>Habits 1-10</h2>
           <label>1) Did you wake up at 8?</label>
           <div class="binary-input" data-field="wakeUpAt8">
@@ -124,6 +129,6 @@
     </main>
 
     <script src="config.js?v=20260217-2"></script>
-    <script src="app.js?v=20260219-1"></script>
+    <script src="app.js?v=20260221-1"></script>
   </body>
 </html>

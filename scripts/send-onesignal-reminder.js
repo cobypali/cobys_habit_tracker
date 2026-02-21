@@ -1,4 +1,5 @@
 const ONE_SIGNAL_API_URL = "https://api.onesignal.com/notifications";
+const { randomUUID } = require("crypto");
 const TIMEZONE = process.env.TIMEZONE || "America/Los_Angeles";
 const FORCE_SEND =
   String(process.env.FORCE_SEND || "").toLowerCase() === "true" ||
@@ -41,7 +42,7 @@ async function main() {
         headings: { en: "Instant Test Notification" },
         contents: { en: "This is a manual push test from GitHub Actions." },
         is_any_web: true,
-        idempotency_key: "habit-reminder-test-" + now.ymd + "-" + now.hh + now.mm
+        idempotency_key: randomUUID()
       },
       "instant-test",
       now.isoLocal
@@ -55,14 +56,13 @@ async function main() {
     return;
   }
 
-  const idempotencyKey = "habit-reminder-" + now.ymd + "-" + reminder.time.replace(":", "");
   const payload = {
     app_id: APP_ID,
     included_segments: ["Subscribed Users"],
     headings: { en: reminder.title },
     contents: { en: reminder.body },
     is_any_web: true,
-    idempotency_key: idempotencyKey
+    idempotency_key: randomUUID()
   };
 
   await sendPayload(payload, reminder.time, now.isoLocal);

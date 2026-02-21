@@ -38,10 +38,10 @@ async function main() {
     await sendPayload(
       {
         app_id: APP_ID,
+        target_channel: "push",
         included_segments: ["Subscribed Users"],
         headings: { en: "Instant Test Notification" },
         contents: { en: "This is a manual push test from GitHub Actions." },
-        is_any_web: true,
         idempotency_key: randomUUID()
       },
       "instant-test",
@@ -58,10 +58,10 @@ async function main() {
 
   const payload = {
     app_id: APP_ID,
+    target_channel: "push",
     included_segments: ["Subscribed Users"],
     headings: { en: reminder.title },
     contents: { en: reminder.body },
-    is_any_web: true,
     idempotency_key: randomUUID()
   };
 
@@ -81,6 +81,18 @@ async function sendPayload(payload, label, isoLocal) {
   const raw = await response.text();
   if (!response.ok) {
     throw new Error("OneSignal send failed (" + response.status + "): " + raw);
+  }
+
+  let parsed = null;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    parsed = null;
+  }
+
+  const recipients = parsed && typeof parsed.recipients !== "undefined" ? Number(parsed.recipients) : NaN;
+  if (!Number.isNaN(recipients) && recipients <= 0) {
+    throw new Error("OneSignal accepted request but recipients=0. Check app ID and active subscribed users.");
   }
 
   console.log("Reminder sent:", label, isoLocal);

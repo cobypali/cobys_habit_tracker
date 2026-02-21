@@ -296,7 +296,7 @@ function normalizeWellbeing(v) {
   if (isNaN(n)) return "";
   if (n < 0) return 0;
   if (n > 10) return 10;
-  return Math.round(n);
+  return n;
 }
 
 function columnToNumber(column) {

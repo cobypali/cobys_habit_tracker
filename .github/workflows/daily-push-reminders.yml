@@ -22,4 +22,6 @@ jobs:
           node-version: "20"
 
       - name: Send reminder if current local time matches
+        env:
+          FORCE_SEND: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
         run: node scripts/send-onesignal-reminder.js

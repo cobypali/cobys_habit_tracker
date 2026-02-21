@@ -1,5 +1,6 @@
 const ONE_SIGNAL_API_URL = "https://api.onesignal.com/notifications";
 const TIMEZONE = process.env.TIMEZONE || "America/Los_Angeles";
+const FORCE_SEND = String(process.env.FORCE_SEND || "").toLowerCase() === "true";
 
 const APP_ID = process.env.ONESIGNAL_APP_ID || "";
 const REST_API_KEY = process.env.ONESIGNAL_REST_API_KEY || "";
@@ -30,6 +31,22 @@ async function main() {
   const now = getNowInTimeZone(TIMEZONE);
   const timeKey = now.hh + ":" + now.mm;
 
+  if (FORCE_SEND) {
+    await sendPayload(
+      {
+        app_id: APP_ID,
+        included_segments: ["Subscribed Users"],
+        headings: { en: "Instant Test Notification" },
+        contents: { en: "This is a manual push test from GitHub Actions." },
+        is_any_web: true,
+        idempotency_key: "habit-reminder-test-" + now.ymd + "-" + now.hh + now.mm
+      },
+      "instant-test",
+      now.isoLocal
+    );
+    return;
+  }
+
   const reminder = REMINDERS.find((entry) => entry.time === timeKey);
   if (!reminder) {
     console.log("No reminder scheduled for this run:", now.isoLocal);
@@ -46,6 +63,10 @@ async function main() {
     idempotency_key: idempotencyKey
   };
 
+  await sendPayload(payload, reminder.time, now.isoLocal);
+}
+
+async function sendPayload(payload, label, isoLocal) {
   const response = await fetch(ONE_SIGNAL_API_URL, {
     method: "POST",
     headers: {
@@ -60,7 +81,7 @@ async function main() {
     throw new Error("OneSignal send failed (" + response.status + "): " + raw);
   }
 
-  console.log("Reminder sent:", reminder.time, now.isoLocal);
+  console.log("Reminder sent:", label, isoLocal);
   console.log(raw);
 }
 

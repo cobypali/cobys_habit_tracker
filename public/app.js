@@ -8,6 +8,7 @@ const seeInsightsButton = document.getElementById("seeInsightsBtn");
 const prevDateButton = document.getElementById("prevDateBtn");
 const nextDateButton = document.getElementById("nextDateBtn");
 const currentDateLabel = document.getElementById("currentDateLabel");
+const dayScoreText = document.getElementById("dayScoreText");
 
 const appConfig = window.APP_CONFIG || {};
 const appsScriptUrl = appConfig.appsScriptUrl || "";
@@ -247,6 +248,15 @@ function updateCurrentDateLabel() {
   currentDateLabel.textContent = formatDisplayDate(selectedDate);
 }
 
+function updateDayScoreDisplay(scoreValue) {
+  if (!dayScoreText) {
+    return;
+  }
+
+  const normalized = String(scoreValue || "").trim();
+  dayScoreText.textContent = normalized ? "Score of the day: " + normalized : "Score of the day: --";
+}
+
 function initBinaryInputs() {
   if (!form) {
     return;
@@ -483,6 +493,10 @@ function applySavedValues(values) {
     }
   }
 
+  if (Object.prototype.hasOwnProperty.call(values, "dayScore")) {
+    updateDayScoreDisplay(values.dayScore);
+  }
+
   suppressAutoSave = false;
 }
 
@@ -513,6 +527,7 @@ function clearFormValues() {
     }
   }
 
+  updateDayScoreDisplay("");
   suppressAutoSave = false;
 }
 

@@ -13,6 +13,7 @@ var FIELD_TO_COLUMN = {
   stretch: "J",
   hairCare: "K",
   gratitudePrayer: "L",
+  dayScore: "N",
   wellbeing: "P",
   notes: "Q",
   activities: "R",
@@ -197,6 +198,7 @@ function buildUpdates(params, targetRow) {
 
   for (var key in FIELD_TO_COLUMN) {
     if (!FIELD_TO_COLUMN.hasOwnProperty(key)) continue;
+    if (key === "dayScore") continue;
     if (!params.hasOwnProperty(key)) continue;
 
     var normalized = normalizeByField(key, params[key]);
@@ -223,6 +225,9 @@ function normalizeByField(fieldName, value) {
 }
 
 function normalizeCellForField(fieldName, value) {
+  if (fieldName === "dayScore") {
+    return String(value || "").trim();
+  }
   if (fieldName === "wellbeing") {
     var wellbeing = normalizeWellbeing(value);
     return wellbeing === "" ? "" : String(wellbeing);

@@ -214,6 +214,13 @@ button:hover {
   background: var(--danger-hover);
 }
 
+.day-score-text {
+  margin: 0.7rem 0 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--muted-strong);
+}
+
 .submit-btn {
   margin-top: 0.4rem;
 }

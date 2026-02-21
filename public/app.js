@@ -254,7 +254,22 @@ function updateDayScoreDisplay(scoreValue) {
   }
 
   const normalized = scoreValue === null || typeof scoreValue === "undefined" ? "" : String(scoreValue).trim();
-  dayScoreText.textContent = normalized ? "Score of the day: " + normalized : "Score of the day: --";
+  dayScoreText.textContent = normalized ? "Score of the day: " + formatDayScorePercent(normalized) : "Score of the day: --";
+}
+
+function formatDayScorePercent(scoreText) {
+  if (/%$/.test(scoreText)) {
+    return scoreText;
+  }
+
+  const n = Number(scoreText);
+  if (Number.isNaN(n)) {
+    return scoreText;
+  }
+
+  const percentValue = n > 0 && n <= 1 ? n * 100 : n;
+  const rounded = Math.round(percentValue * 10) / 10;
+  return String(rounded) + "%";
 }
 
 function initBinaryInputs() {

@@ -216,7 +216,7 @@ button:hover {
 
 .day-score-text {
   margin: 0.7rem 0 0.2rem;
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   font-weight: 600;
   color: var(--muted-strong);
 }

@@ -126,11 +126,16 @@ function getValuesForDate(sheet, dateKey) {
     return { ok: true, exists: false, dateKey: dateKey, values: {} };
   }
 
+  // Read columns C–T (3–20) in a single batch call instead of one call per cell
+  var startCol = 3;
+  var numCols = 18;
+  var rowData = sheet.getRange(row, startCol, 1, numCols).getValues()[0];
+
   var values = {};
   for (var key in FIELD_TO_COLUMN) {
     if (!FIELD_TO_COLUMN.hasOwnProperty(key)) continue;
-    var colNumber = columnToNumber(FIELD_TO_COLUMN[key]);
-    var cellValue = sheet.getRange(row, colNumber).getValue();
+    var colIndex = columnToNumber(FIELD_TO_COLUMN[key]) - startCol;
+    var cellValue = rowData[colIndex];
     var normalized = normalizeCellForField(key, cellValue);
     if (normalized !== "") {
       values[key] = normalized;
@@ -142,9 +147,14 @@ function getValuesForDate(sheet, dateKey) {
 
 function getInsightsResponse(sheet) {
   var percentRow = 370;
+  // Read columns C–T (3–20) in a single batch call instead of one call per habit
+  var startCol = 3;
+  var numCols = 18;
+  var rowData = sheet.getRange(percentRow, startCol, 1, numCols).getValues()[0];
+
   var habits = HABIT_DEFINITIONS.map(function (habit) {
-    var habitColNumber = columnToNumber(FIELD_TO_COLUMN[habit.key]);
-    var completion = formatCompletionFromRowValue(sheet.getRange(percentRow, habitColNumber).getValue());
+    var colIndex = columnToNumber(FIELD_TO_COLUMN[habit.key]) - startCol;
+    var completion = formatCompletionFromRowValue(rowData[colIndex]);
     return {
       key: habit.key,
       label: habit.label,
@@ -153,10 +163,8 @@ function getInsightsResponse(sheet) {
     };
   });
 
-  var overallScoreCol = columnToNumber("N");
-  var wellbeingCol = columnToNumber("P");
-  var overallScoreAverage = formatCompletionFromRowValue(sheet.getRange(percentRow, overallScoreCol).getValue());
-  var averageWellbeing = formatWellbeingFromRowValue(sheet.getRange(percentRow, wellbeingCol).getValue());
+  var overallScoreAverage = formatCompletionFromRowValue(rowData[columnToNumber("N") - startCol]);
+  var averageWellbeing = formatWellbeingFromRowValue(rowData[columnToNumber("P") - startCol]);
   return {
     habits: habits,
     overallScoreAverage: overallScoreAverage,

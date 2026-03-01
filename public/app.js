@@ -26,6 +26,8 @@ const coreHabitFieldNames = [...binaryFieldNames];
 const fullDayFieldNames = [...binaryFieldNames, "wellbeing", "notes", "activities", "stomachFeel", "weight"];
 const insightsCacheKey = "habitTrackerInsightsCache";
 const insightsCacheTtlMs = 5 * 60 * 1000;
+const dayCacheKey = "habitTrackerDayCache";
+const dayCacheTtlMs = 10 * 60 * 1000;
 
 let autoSaveTimerId = 0;
 let isAutoSavingHabits = false;
@@ -44,18 +46,17 @@ function init() {
 }
 
 function scheduleNonCriticalStartupWork() {
+  // Load today's data immediately — it's the primary content
+  loadSelectedDateValues();
+
+  // Insights prefetch is non-critical, defer it
   if (typeof window.requestIdleCallback === "function") {
     window.requestIdleCallback(() => {
-      loadSelectedDateValues();
       prefetchInsightsInBackground();
     }, { timeout: 2500 });
-    return;
+  } else {
+    window.setTimeout(prefetchInsightsInBackground, 0);
   }
-
-  window.setTimeout(() => {
-    loadSelectedDateValues();
-    prefetchInsightsInBackground();
-  }, 800);
 }
 
 if (seeInsightsButton) {
@@ -281,6 +282,14 @@ async function loadSelectedDateValues() {
   }
 
   const requestId = ++activeDateLoadRequestId;
+  const dateKey = getDateKeyLocal(selectedDate);
+
+  // Show cached data immediately so the form isn't blank while fetching
+  const cachedValues = readDayCache(dateKey);
+  if (cachedValues) {
+    clearFormValues();
+    applySavedValues(cachedValues);
+  }
 
   try {
     const payload = await fetchValuesForDateJsonp(selectedDate);
@@ -295,8 +304,10 @@ async function loadSelectedDateValues() {
     }
 
     applySavedValues(payload.values);
+    writeDayCache(dateKey, payload.values);
   } catch (error) {
     console.error("Failed to load existing values:", error);
+    // Cached data (if any) stays visible on network error
   }
 }
 
@@ -523,4 +534,23 @@ function readInsightsCache() {
   } catch (error) {
     return null;
   }
+}
+
+function readDayCache(dateKey) {
+  try {
+    const raw = localStorage.getItem(dayCacheKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || parsed.dateKey !== dateKey) return null;
+    if (Date.now() - parsed.cachedAt > dayCacheTtlMs) return null;
+    return parsed.values;
+  } catch (e) {
+    return null;
+  }
+}
+
+function writeDayCache(dateKey, values) {
+  try {
+    localStorage.setItem(dayCacheKey, JSON.stringify({ dateKey, cachedAt: Date.now(), values }));
+  } catch (e) {}
 }

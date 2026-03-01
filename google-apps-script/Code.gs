@@ -52,6 +52,11 @@ function doPost(e) {
       sheet.getRange(u.row, u.col).setValue(u.value);
     }
 
+    // Invalidate the server-side cache for this date so the next read is fresh
+    try {
+      CacheService.getScriptCache().remove("v1_day_" + requestDateKey.replace("/", "_"));
+    } catch (e) {}
+
     return jsonResponse({ ok: true, row: targetRow, updates: updates.length });
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) });
@@ -121,6 +126,13 @@ function findRowByDateKey(sheet, dateKey) {
 }
 
 function getValuesForDate(sheet, dateKey) {
+  var cache = CacheService.getScriptCache();
+  var cacheKey = "v1_day_" + dateKey.replace("/", "_");
+  var cached = cache.get(cacheKey);
+  if (cached) {
+    try { return JSON.parse(cached); } catch (e) {}
+  }
+
   var row = findRowByDateKey(sheet, dateKey);
   if (!row) {
     return { ok: true, exists: false, dateKey: dateKey, values: {} };
@@ -142,10 +154,19 @@ function getValuesForDate(sheet, dateKey) {
     }
   }
 
-  return { ok: true, exists: true, dateKey: dateKey, row: row, values: values };
+  var result = { ok: true, exists: true, dateKey: dateKey, row: row, values: values };
+  try { cache.put(cacheKey, JSON.stringify(result), 600); } catch (e) {}
+  return result;
 }
 
 function getInsightsResponse(sheet) {
+  var cache = CacheService.getScriptCache();
+  var cacheKey = "v1_insights";
+  var cached = cache.get(cacheKey);
+  if (cached) {
+    try { return JSON.parse(cached); } catch (e) {}
+  }
+
   var percentRow = 370;
   // Read columns C–T (3–20) in a single batch call instead of one call per habit
   var startCol = 3;
@@ -165,11 +186,13 @@ function getInsightsResponse(sheet) {
 
   var overallScoreAverage = formatCompletionFromRowValue(rowData[columnToNumber("N") - startCol]);
   var averageWellbeing = formatWellbeingFromRowValue(rowData[columnToNumber("P") - startCol]);
-  return {
+  var result = {
     habits: habits,
     overallScoreAverage: overallScoreAverage,
     averageWellbeing: averageWellbeing
   };
+  try { cache.put(cacheKey, JSON.stringify(result), 3600); } catch (e) {}
+  return result;
 }
 
 function formatCompletionFromRowValue(value) {
@@ -328,4 +351,11 @@ function respond(obj, callback) {
 
   var payload = cb + "(" + JSON.stringify(obj) + ");";
   return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+// Attach this to a time-based trigger (every 10 minutes) to prevent cold starts.
+// In the Apps Script editor: Triggers (clock icon) → Add Trigger →
+//   warmup | Time-driven | Minutes timer | Every 10 minutes
+function warmup() {
+  SpreadsheetApp.openById(SPREADSHEET_ID);
 }
